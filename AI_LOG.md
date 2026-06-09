@@ -15,6 +15,10 @@ O `AI_LOG.md` deve registrar:
 
 ## Registro de Uso
 
-| Data       | Ferramenta  | Pedido                                | Aceito                                                           | Rejeitado | Justificativa                                                      |
-|------------|-------------|---------------------------------------|------------------------------------------------------------------|-----------|--------------------------------------------------------------------|
+| Data | Ferramenta | Pedido | Aceito | Rejeitado | Justificativa |
+|------|------------|--------|--------|-----------|---------------|
+|      |            |        |        |           |               |
+
+| Data       | Ferramenta  | Pedido                                | Aceito                                                           | Rejeitado | Justificativa                                                       |
+|------------|-------------|---------------------------------------|------------------------------------------------------------------|-----------|--
 | 2026-06-09 | Claude Code | Criação de cabeçalho para o AI_LOG.md | Tabela de referência dos campos e tabela de registro em Markdown | -         | O formato em tabela Markdown atende ao padrão exigido pelo projeto |
