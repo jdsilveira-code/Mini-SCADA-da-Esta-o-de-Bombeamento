@@ -1,13 +1,22 @@
+
+#define SENSORES_HPP
+
 #include <string>
+#include "GeradorNumeros.hpp"
 
 class Sensor{
-    private:
+    protected:
         float ValorAtual;
         std::string Tag;
         std::string UnidadeMedida;
+        GeradorAleatorio gerador;
 
     public:
         virtual void ler() {}
+        
+        double getValorAtual(){
+            return ValorAtual;
+        }
 
 };
 
@@ -16,7 +25,8 @@ class SensorNivel : public Sensor{
         float ValorMax;
         float ValorMin;
     public:
-        void ler() override{}
+        SensorNivel() = default;
+        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
 };
 
 class SensorRadiacao : public Sensor{
@@ -24,7 +34,8 @@ class SensorRadiacao : public Sensor{
         float ValorMax;
         float ValorMin;
     public:
-        void ler() override{}
+        SensorRadiacao() = default;
+        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
 };
 
 class SensorTemp : public Sensor{
@@ -32,7 +43,8 @@ class SensorTemp : public Sensor{
         float ValorMax;
         float ValorMin;
     public:
-        void ler() override{}
+        SensorTemp() = default;
+        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
 };
 
 class SensorVazao : public Sensor{
@@ -40,5 +52,6 @@ class SensorVazao : public Sensor{
         float ValorMax;
         float ValorMin;
     public:
-        void ler() override{}
+        SensorVazao() = default;
+        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
 };
