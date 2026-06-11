@@ -1,20 +1,22 @@
-#include <iostream>
-#include <random>
+#ifndef GERADOR_NUMEROS_HPP
+#define GERADOR_NUMEROS_HPP
 
-using namespace std;
+#include <random>
 
 class GeradorAleatorio {
 private:
-    mt19937 gerador;
+    std::mt19937 gerador;
 
 public:
     GeradorAleatorio() {
-        random_device rd;
+        std::random_device rd;
         gerador.seed(rd());
     }
 
     float decimal(float minimo, float maximo) {
-        uniform_real_distribution<float> dist(minimo, maximo);
+        std::uniform_real_distribution<float> dist(minimo, maximo);
         return dist(gerador);
     }
 };
+
+#endif // GERADOR_NUMEROS_HPP
