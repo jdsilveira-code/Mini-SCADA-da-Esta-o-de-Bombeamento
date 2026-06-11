@@ -33,15 +33,15 @@ class ControleNivel : public EstrategiaControle {
 // Controla as varetas baseado na temperatura do sistema
 class ControleTemperatura : public EstrategiaControle {
     private:
-        float tempMaxima;
+        float RadMax;
 
     public:
-        ControleTemperatura(float tMax) : tempMaxima(tMax) {}
+        ControleTemperatura(float RMax) : RadMax(RMax) {}
 
         void aplicar(Sensor* sensor, Atuador* atuador) override {
             float temp = sensor->getValorAtual();
 
-            if (temp > tempMaxima) {
+            if (temp > RadMax) {
                 atuador->desligar();
             } else {
                 atuador->ligar();

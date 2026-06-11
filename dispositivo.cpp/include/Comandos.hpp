@@ -1,7 +1,7 @@
 #ifndef COMANDO_HPP
 #define COMANDO_HPP
 
-#include "estrategia controle.hpp"
+#include "estrategia_controle.hpp"
 #include <iostream>
 
 // Classe central que representa a estacao de bombeamento.

@@ -1,6 +1,5 @@
-
+#ifndef SENSORES_HPP
 #define SENSORES_HPP
-
 #include <string>
 #include "GeradorNumeros.hpp"
 
@@ -55,3 +54,5 @@ class SensorVazao : public Sensor{
         SensorVazao() = default;
         void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
 };
+
+#endif // SENSORES_HPP
