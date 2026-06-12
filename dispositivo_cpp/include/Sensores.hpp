@@ -1,9 +1,10 @@
 #ifndef SENSORES_HPP
 #define SENSORES_HPP
+
 #include <string>
 #include "GeradorNumeros.hpp"
 
-class Sensor{
+class Sensor {
     protected:
         float ValorAtual;
         std::string Tag;
@@ -13,42 +14,42 @@ class Sensor{
     public:
         virtual void ler() = 0;
         double getValorAtual();
-
+        virtual ~Sensor() {}
 };
 
-class SensorNivel : public Sensor{
+class SensorNivel : public Sensor {
     private:
         float ValorMax;
         float ValorMin;
     public:
-        SensorNivel() = default;
+        SensorNivel(std::string tag, float max, float min);
         void ler() override;
 };
 
-class SensorRadiacao : public Sensor{
+class SensorRadiacao : public Sensor {
     private:
         float ValorMax;
         float ValorMin;
     public:
-        SensorRadiacao() = default;
+        SensorRadiacao(std::string tag, float max, float min);
         void ler() override;
 };
 
-class SensorTemp : public Sensor{
+class SensorTemp : public Sensor {
     private:
         float ValorMax;
         float ValorMin;
     public:
-        SensorTemp() = default;
-        void ler() override; 
+        SensorTemp(std::string tag, float max, float min);
+        void ler() override;
 };
 
-class SensorVazao : public Sensor{
+class SensorVazao : public Sensor {
     private:
         float ValorMax;
         float ValorMin;
     public:
-        SensorVazao() = default;
+        SensorVazao(std::string tag, float max, float min);
         void ler() override;
 };
 

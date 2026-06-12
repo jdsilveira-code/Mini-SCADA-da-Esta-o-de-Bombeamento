@@ -1,23 +1,23 @@
 #ifndef ATUADORES_HPP
 #define ATUADORES_HPP
 
-#include "sensores.hpp"
+#include "Sensores.hpp"
 #include <string>
+#include <stdexcept>
 
-// Classe base para todos os atuadores da estacao
 class Atuador {
     protected:
         std::string Tag;
         bool ligado{false};
 
     public:
-        Atuador(std::string tag) : Tag(tag) {}
+        Atuador(std::string tag);
 
-        virtual void ligar() { ligado = true; }
-        virtual void desligar() { ligado = false; }
+        virtual void ligar();
+        virtual void desligar();
 
-        bool isLigado() { return ligado; }
-        std::string getTag() { return Tag; }
+        bool isLigado();
+        std::string getTag();
 
         virtual ~Atuador() {}
 };
@@ -28,38 +28,16 @@ class BombaAgua : public Atuador {
         SensorNivel* sensorNivel{nullptr};
 
     public:
-        BombaAgua(std::string tag) : Atuador(tag) {}
+        BombaAgua(std::string tag);
 
-        void ligar() override {
-            ligado = true;
-            Potencia = 100.0f;
-        }
+        void ligar() override;
+        void desligar() override;
 
-        void desligar() override {
-            ligado = false;
-            Potencia = 0.0f;
-        }
+        void setPotencia(float NovaPotencia);
+        float getPotencia();
 
-        void setPotencia(float NovaPotencia){
-            if (NovaPotencia < 0.0f || NovaPotencia > 100.0f) {
-                throw std::out_of_range("Potencia inválida");
-            }
-            else{
-                Potencia = NovaPotencia;
-            }
-        }
-
-        float getPotencia(){
-            return Potencia;
-        }
-
-        void vincularSensor(SensorNivel* sensor) {
-            sensorNivel = sensor;
-        }
-
-        SensorNivel* getSensor() {
-            return sensorNivel;
-        }
+        void vincularSensor(SensorNivel* sensor);
+        SensorNivel* getSensor();
 };
 
 class Varetas : public Atuador {
@@ -67,24 +45,13 @@ class Varetas : public Atuador {
         float ValorAtual{0.0f};
 
     public:
-        Varetas(std::string tag) : Atuador(tag) {}
+        Varetas(std::string tag);
 
-        void ligar() override {
-            ligado = true;
-        }
+        void ligar() override;
+        void desligar() override;
 
-        void desligar() override {
-            ligado = false;
-            ValorAtual = 0.0f;
-        }
-
-        void AjustarQueima(float NovoValor){
-            ValorAtual = NovoValor;
-        }
-
-        float getValorAtual(){
-            return ValorAtual;
-        }
+        void AjustarQueima(float NovoValor);
+        float getValorAtual();
 };
 
 #endif // ATUADORES_HPP
