@@ -41,7 +41,12 @@ class BombaAgua : public Atuador {
         }
 
         void setPotencia(float NovaPotencia){
-            Potencia = NovaPotencia;
+            if (NovaPotencia < 0.0f || NovaPotencia > 100.0f) {
+                throw std::out_of_range("Potencia inválida");
+            }
+            else{
+                Potencia = NovaPotencia;
+            }
         }
 
         float getPotencia(){

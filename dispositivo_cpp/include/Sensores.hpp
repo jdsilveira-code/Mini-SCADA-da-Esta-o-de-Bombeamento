@@ -11,11 +11,8 @@ class Sensor{
         GeradorAleatorio gerador;
 
     public:
-        virtual void ler() {}
-        
-        double getValorAtual(){
-            return ValorAtual;
-        }
+        virtual void ler() = 0;
+        double getValorAtual();
 
 };
 
@@ -25,7 +22,7 @@ class SensorNivel : public Sensor{
         float ValorMin;
     public:
         SensorNivel() = default;
-        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
+        void ler() override;
 };
 
 class SensorRadiacao : public Sensor{
@@ -34,7 +31,7 @@ class SensorRadiacao : public Sensor{
         float ValorMin;
     public:
         SensorRadiacao() = default;
-        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
+        void ler() override;
 };
 
 class SensorTemp : public Sensor{
@@ -43,7 +40,7 @@ class SensorTemp : public Sensor{
         float ValorMin;
     public:
         SensorTemp() = default;
-        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
+        void ler() override; 
 };
 
 class SensorVazao : public Sensor{
@@ -52,7 +49,7 @@ class SensorVazao : public Sensor{
         float ValorMin;
     public:
         SensorVazao() = default;
-        void ler() override { ValorAtual = gerador.decimal(ValorMin, ValorMax); }
+        void ler() override;
 };
 
 #endif // SENSORES_HPP
