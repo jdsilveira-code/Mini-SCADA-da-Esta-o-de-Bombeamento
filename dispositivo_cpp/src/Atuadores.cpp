@@ -23,13 +23,11 @@ void BombaAgua::desligar() {
 void BombaAgua::setPotencia(float NovaPotencia) {
     if (NovaPotencia < 0.0f || NovaPotencia > 100.0f)
         throw std::out_of_range("Potencia invalida");
-    else {
-        Potencia = NovaPotencia;
-        if (ligado && Potencia == 0.0f) {
-            desligar();
-        } else if (!ligado && Potencia > 0.0f) {
-            ligar();
-        }
+    Potencia = NovaPotencia;
+    if (ligado && Potencia == 0.0f) {
+        desligar();
+    } else if (!ligado && Potencia > 0.0f) {
+        ligar();
     }
 }
 
@@ -50,7 +48,13 @@ void Varetas::desligar() {
 void Varetas::AjustarQueima(float NovoValor) {
     if(NovoValor < 0.0f || NovoValor > 100.0f)
         throw std::out_of_range("Queima inválida");
-    else
-        ValorAtual = NovoValor; 
+    
+    ValorAtual = NovoValor; 
+    if (ligado && ValorAtual == 0.0f) {
+        desligar();
+    } else if (!ligado && ValorAtual > 0.0f) {
+        ligar();
     }
-float Varetas::getValorAtual() { return ValorAtual; }
+float Varetas::getValorAtual() { 
+    return ValorAtual; 
+}
