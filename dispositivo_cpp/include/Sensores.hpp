@@ -9,11 +9,20 @@ class Sensor {
         float ValorAtual;
         std::string Tag;
         std::string UnidadeMedida;
+        std::string Timestamp;
+        std::string Status{"OPERACIONAL"};
         GeradorAleatorio gerador;
+
+        void atualizarTimestamp();
 
     public:
         virtual void ler() = 0;
         double getValorAtual();
+        std::string getTag();
+        std::string getUnidadeMedida();
+        std::string getTimestamp();
+        std::string getStatus();
+        void setStatus(std::string novoStatus);
         virtual ~Sensor() {}
 };
 
