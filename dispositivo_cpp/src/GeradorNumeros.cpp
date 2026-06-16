@@ -5,7 +5,7 @@ GeradorAleatorio::GeradorAleatorio() {
     gerador.seed(rd());
 }
 
-float GeradorAleatorio::decimal(float minimo, float maximo) {
-    std::uniform_real_distribution<float> dist(minimo, maximo);
+int GeradorAleatorio::decimal(int minimo, int maximo) {
+    std::uniform_int_distribution<int> dist(minimo, maximo);
     return dist(gerador);
 }

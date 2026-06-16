@@ -6,60 +6,77 @@
 
 class Sensor {
     protected:
-        float ValorAtual;
         std::string Tag;
         std::string UnidadeMedida;
         std::string Timestamp;
         std::string Status{"OPERACIONAL"};
         GeradorAleatorio gerador;
+        int ValorMax;
+        int ValorMin;
 
         void atualizarTimestamp();
 
     public:
         virtual void ler() = 0;
-        double getValorAtual();
+        virtual int getValorAtual() const = 0;
         std::string getTag();
         std::string getUnidadeMedida();
         std::string getTimestamp();
         std::string getStatus();
         void setStatus(std::string novoStatus);
+        virtual void calibrar();
         virtual ~Sensor() {}
 };
 
 class SensorNivel : public Sensor {
     private:
-        float ValorMax;
-        float ValorMin;
+        int AlturaAtual;
+        float RaioTanque;
+        float VolumeTotalMax;
     public:
-        SensorNivel(std::string tag, float max, float min);
+        SensorNivel(std::string tag, int max, int min);
         void ler() override;
+        int getValorAtual() const override;
+
+        void CalcularVolume(int altura, float raio);
 };
 
 class SensorRadiacao : public Sensor {
     private:
-        float ValorMax;
-        float ValorMin;
+        int NivelRadiacaoAtual;
+        float DoseAcumulada;
+        float LimiteDoseAcumulada;
     public:
-        SensorRadiacao(std::string tag, float max, float min);
+        SensorRadiacao(std::string tag, int max, int min);
         void ler() override;
+        int getValorAtual() const override;
+
+        void AcumularDose(int nivel,std::string timestamp);
+
 };
 
 class SensorTemp : public Sensor {
     private:
-        float ValorMax;
-        float ValorMin;
+        int TempKelvin;
+        float TempCelsius;
     public:
-        SensorTemp(std::string tag, float max, float min);
+        SensorTemp(std::string tag, int max, int min);
         void ler() override;
+        int getValorAtual() const override;
+
+        void ConverterKelvinCelsius(int tempKelvin);
 };
 
 class SensorVazao : public Sensor {
     private:
-        float ValorMax;
-        float ValorMin;
+        int VazaoAtual;
+        float VazaoAcumulada;
     public:
-        SensorVazao(std::string tag, float max, float min);
+        SensorVazao(std::string tag, int max, int min);
         void ler() override;
+        int getValorAtual() const override;
+
+        void AcumularVazao(int vazao,std::string timestamp);
 };
 
 #endif // SENSORES_HPP

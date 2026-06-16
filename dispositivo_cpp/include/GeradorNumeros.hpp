@@ -9,7 +9,7 @@ private:
 
 public:
     GeradorAleatorio();
-    float decimal(float minimo, float maximo);
+    int decimal(int minimo, int maximo);
 };
 
 #endif // GERADOR_NUMEROS_HPP

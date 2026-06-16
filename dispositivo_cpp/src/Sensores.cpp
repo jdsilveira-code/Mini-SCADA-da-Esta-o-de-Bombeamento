@@ -3,10 +3,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
-
-double Sensor::getValorAtual() {
-    return ValorAtual;
-}
+#include <cmath>
 
 std::string Sensor::getTag() {
     return Tag;
@@ -21,11 +18,10 @@ void Sensor::atualizarTimestamp() {
     std::time_t tempo = std::chrono::system_clock::to_time_t(agora);
     std::tm tempoUtc{};
 
-#ifdef _WIN32
-    gmtime_s(&tempoUtc, &tempo);
-#else
-    gmtime_r(&tempo, &tempoUtc);
-#endif
+    std::tm* resultado = std::gmtime(&tempo);
+    if (resultado != nullptr) {
+        tempoUtc = *resultado;
+    }
 
     std::ostringstream saida;
     saida << std::put_time(&tempoUtc, "%Y-%m-%dT%H:%M:%SZ");
@@ -44,7 +40,11 @@ void Sensor::setStatus(std::string novoStatus) {
     Status = novoStatus;
 }
 
-SensorNivel::SensorNivel(std::string tag, float max, float min) {
+void Sensor::calibrar() {
+    // implementação padrão de calibração (subclasses podem sobrepor)
+}
+
+SensorNivel::SensorNivel(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
@@ -52,35 +52,65 @@ SensorNivel::SensorNivel(std::string tag, float max, float min) {
 }
 
 void SensorNivel::ler() {
-    ValorAtual = gerador.decimal(ValorMin, ValorMax);
+    AlturaAtual = gerador.decimal(ValorMin, ValorMax);
     atualizarTimestamp();
 }
 
-SensorRadiacao::SensorRadiacao(std::string tag, float max, float min) {
+int SensorNivel::getValorAtual() const {
+    return AlturaAtual;
+}
+
+void SensorNivel::CalcularVolume(int altura, float raio) {
+    AlturaAtual = altura;
+    RaioTanque = raio;
+    const double pi = 3.14159265358979323846;
+    VolumeTotalMax = static_cast<float>(pi * raio * raio * altura);
+}
+
+SensorRadiacao::SensorRadiacao(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
-    UnidadeMedida = "W/m2";
+    UnidadeMedida = "Sv/h";
 }
 
 void SensorRadiacao::ler() {
-    ValorAtual = gerador.decimal(ValorMin, ValorMax);
+    NivelRadiacaoAtual = gerador.decimal(ValorMin, ValorMax);
     atualizarTimestamp();
+    AcumularDose(NivelRadiacaoAtual, Timestamp);
 }
 
-SensorTemp::SensorTemp(std::string tag, float max, float min) {
+int SensorRadiacao::getValorAtual() const {
+    return NivelRadiacaoAtual;
+}
+
+void SensorRadiacao::AcumularDose(int nivel, std::string timestamp) {
+    DoseAcumulada += nivel;
+    Timestamp = timestamp;
+}
+
+SensorTemp::SensorTemp(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
-    UnidadeMedida = "grC";
+    UnidadeMedida = "K";
 }
 
 void SensorTemp::ler() {
-    ValorAtual = gerador.decimal(ValorMin, ValorMax);
+    TempKelvin = gerador.decimal(ValorMin, ValorMax);
     atualizarTimestamp();
 }
 
-SensorVazao::SensorVazao(std::string tag, float max, float min) {
+int SensorTemp::getValorAtual() const {
+    return TempKelvin;
+}
+
+void SensorTemp::ConverterKelvinCelsius(int tempKelvin) {
+    TempCelsius = tempKelvin - 273.15f;
+    atualizarTimestamp();
+}
+
+SensorVazao::SensorVazao(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
@@ -88,6 +118,15 @@ SensorVazao::SensorVazao(std::string tag, float max, float min) {
 }
 
 void SensorVazao::ler() {
-    ValorAtual = gerador.decimal(ValorMin, ValorMax);
+    VazaoAtual = gerador.decimal(ValorMin, ValorMax);
     atualizarTimestamp();
+}
+
+int SensorVazao::getValorAtual() const {
+    return VazaoAtual;
+}
+
+void SensorVazao::AcumularVazao(int vazao, std::string timestamp) {
+    VazaoAcumulada += vazao;
+    Timestamp = timestamp;
 }
