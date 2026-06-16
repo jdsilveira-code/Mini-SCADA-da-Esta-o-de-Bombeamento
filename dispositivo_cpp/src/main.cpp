@@ -1,4 +1,4 @@
-#include "comando.hpp"
+#include "EstacaoBombeamento.h"
 #include <iostream>
 
 int main(){
