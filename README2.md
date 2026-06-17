@@ -3,8 +3,8 @@
 | Taxa de Dose (mSv/h) | Consequência |
 |---------------------|--------------|
 | 1 mSv/h (1 mSv/h) | Relativamente baixa para exposições curtas |
-| **100 mSv/h** | **Perigosa em exposições de várias horas** |
-| 1000 mSv/h | Dose séria em poucas horas |
+| 100 mSv/h | Perigosa em exposições de várias horas |
+| **1000 mSv/h** | **Dose séria em poucas horas** |
 | 10000 mSv/h | Potencialmente letal em menos de uma hora |
 | 100000 mSv/h | Inconsciência rápida e morte provável |
 | >1000000 mSv/h | Morte em minutos |
@@ -17,8 +17,8 @@
 | Dose Acumulada (mSv) | Efeito Esperado |
 |---------------------|-----------------|
 | 100 mSv | Pequeno aumento do risco de câncer |
-| **500 mSv** | **Alterações detectáveis no sangue** |
-| 1000 mSv | Sintomas leves de síndrome aguda da radiação |
+| 500 mSv | Alterações detectáveis no sangue |
+| **1000 mSv** | **Sintomas leves de síndrome aguda da radiação** |
 | 2000 mSv | Doença por radiação moderada |
 | 4000–5000 mSv | Aproximadamente 50% de mortalidade sem tratamento |
 | 6000–8000 mSv | Mortalidade muito alta |
