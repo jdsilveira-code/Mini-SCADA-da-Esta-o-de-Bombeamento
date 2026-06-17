@@ -55,6 +55,8 @@ void Varetas::AjustarQueima(float NovoValor) {
     } else if (!ligado && ValorAtual > 0.0f) {
         ligar();
     }
+}
+
 float Varetas::getValorAtual() { 
     return ValorAtual; 
 }
