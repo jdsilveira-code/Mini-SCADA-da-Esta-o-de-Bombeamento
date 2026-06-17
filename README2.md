@@ -46,7 +46,7 @@
 | > 90% | Nível Alto | Operação normal |
 | 80 - 90% | Nível Adequado | Operação normal |
 | 70 - 80% | Nível Baixo | Monitorar |
-| 50 - 70% | Alarme Baixo | Aumentar alimentação de água |
+| **50 - 70%** | **Alarme Baixo** | **Aumentar alimentação de água** |
 | 30 - 50% | Alarme Crítico | Reduzir potência do reator |
 | 10 - 30% | Emergência | Iniciar sistema de resfriamento de emergência |
 | < 10% | Perigo Extremo | SCRAM (desligamento imediato) |
