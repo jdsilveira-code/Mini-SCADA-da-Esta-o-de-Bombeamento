@@ -71,7 +71,7 @@ SensorRadiacao::SensorRadiacao(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
-    UnidadeMedida = "Sv/h";
+    UnidadeMedida = "mSv/h";
 }
 
 void SensorRadiacao::ler() {
