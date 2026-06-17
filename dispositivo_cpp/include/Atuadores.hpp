@@ -30,7 +30,7 @@ class BombaAgua : public Atuador {
     public:
         BombaAgua(std::string tag);
 
-        void ligar() override;
+        void ligar(float Potencia) override;
         void desligar() override;
 
         void setPotencia(float NovaPotencia);
@@ -46,9 +46,6 @@ class Varetas : public Atuador {
 
     public:
         Varetas(std::string tag);
-
-        void ligar() override;
-        void desligar() override;
 
         void AjustarQueima(float NovoValor);
         float getValorAtual();
