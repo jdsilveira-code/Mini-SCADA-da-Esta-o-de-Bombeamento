@@ -24,18 +24,16 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 
     float nivel = sNivel->getValorAtual();
 
-    if (valor <= LimiteMin) {
-        atuador->setPotencia(75.0f);
-    if (valor <= LimiteMin) {
-        atuador->setPotencia(75.0f);
+    if (nivel <= LimiteMin) {
+        atuador->setPotencia(100f);
         atuador->ligar();
-    } else if (valor >= LimiteMax) {
-    } else if (valor >= LimiteMax) {
+    } else if (nivel >= LimiteMax) {
         atuador->desligar();
     } else {
-        atuador->setPotencia(50.0f);
-    } else {
-        atuador->setPotencia(50.0f);
+        // controle proporcional: potência entre 0% e 100% dependendo da posição do nível
+        float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
+        atuador->setPotencia(potencia);
+        atuador->ligar();
     }
 }
 
