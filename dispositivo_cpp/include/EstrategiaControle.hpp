@@ -2,17 +2,22 @@
 #define ESTRATEGIA_CONTROLE_HPP
 
 #include "Atuadores.hpp"
+#include "Sensores.hpp"
+
 
 class EstrategiaControle {
+    protected:
+        int LimiteMin;
+        int LimiteMax;
     public:
+        EstrategiaControle(int limiteMin, int limiteMax);
+        EstrategiaControle(int LimiteMax);
         virtual void aplicar(Sensor* sensor, Atuador* atuador) = 0;
         virtual ~EstrategiaControle() {}
 };
 
 class ControleNivel : public EstrategiaControle {
     private:
-        float nivelBaixo;
-        float nivelAlto;
 
     public:
         ControleNivel(float baixo, float alto);
@@ -20,8 +25,6 @@ class ControleNivel : public EstrategiaControle {
 };
 
 class ControleTemperatura : public EstrategiaControle {
-    private:
-        float RadMax;
 
     public:
         ControleTemperatura(float RMax);
@@ -29,13 +32,14 @@ class ControleTemperatura : public EstrategiaControle {
 };
 
 class ControleQueima : public EstrategiaControle {
+    /*
     private:
         float DoseAcumuladaMin;
         float DoseAcumuladaMax;
-
+    */
     public:
         ControleQueima(float Dose, float qMax);
-        //void aplicar(Sensor* sensor, Atuador* atuador) override;
+        void aplicar(Sensor* sensor, Atuador* atuador) override;
 };
 
 #endif // ESTRATEGIA_CONTROLE_HPP
