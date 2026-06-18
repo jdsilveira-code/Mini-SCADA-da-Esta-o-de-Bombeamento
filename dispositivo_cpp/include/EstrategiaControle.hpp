@@ -18,15 +18,12 @@ class EstrategiaControle {
 
 
 class ControleNivel : public EstrategiaControle {
-    private:
-
     public:
         ControleNivel(float baixo, float alto);
         void aplicar(Sensor* sensor, Atuador* atuador) override;
 };
 
 class ControleTemperatura : public EstrategiaControle {
-
     public:
         ControleTemperatura(float RMax);
         void aplicar(Sensor* sensor, Atuador* atuador) override;
