@@ -1,13 +1,14 @@
 #include "Alarmes.hpp"
 
+/*
 AlarmeTemperatura::AlarmeTemperatura(int limiteMinimo, int limiteMaximo)
-    : limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
+: limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
 
 void AlarmeTemperatura::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    
     int valor = sensor->getValorAtual();
     if (valor < limiteMinimo) {
         sensor->setStatus("ALERTA - TEMPERATURA BAIXA");
@@ -19,13 +20,13 @@ void AlarmeTemperatura::verificar(Sensor* sensor) {
 }
 
 AlarmeNivel::AlarmeNivel(int limiteMinimo, int limiteMaximo)
-    : limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
+: limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
 
 void AlarmeNivel::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    
     int valor = sensor->getValorAtual();
     if (valor < limiteMinimo) {
         sensor->setStatus("ALERTA - NÍVEL BAIXO");
@@ -35,16 +36,16 @@ void AlarmeNivel::verificar(Sensor* sensor) {
         sensor->setStatus("OPERACIONAL");
     }
 }
-        
+
 
 AlarmeRadiacao::AlarmeRadiacao(int limiteMaximo)
-    : limiteMaximo(limiteMaximo) {}
+: limiteMaximo(limiteMaximo) {}
 
 void AlarmeRadiacao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    
     int valor = sensor->getValorAtual();
     if (valor > limiteMaximo) {
         sensor->setStatus("ALERTA");
@@ -54,13 +55,13 @@ void AlarmeRadiacao::verificar(Sensor* sensor) {
 }
 
 AlarmeVazao::AlarmeVazao(int limiteMinimo, int limiteMaximo)
-    : limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
+: limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
 
 void AlarmeVazao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    
     int valor = sensor->getValorAtual();
     if (valor < limiteMinimo) {
         sensor->setStatus("ALERTA - VAZÃO BAIXA");
@@ -70,3 +71,5 @@ void AlarmeVazao::verificar(Sensor* sensor) {
         sensor->setStatus("OPERACIONAL");
     }
 }
+
+*/;
