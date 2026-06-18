@@ -30,11 +30,6 @@ class ControleTemperatura : public EstrategiaControle {
 };
 
 class ControleQueima : public EstrategiaControle {
-    /*
-    private:
-        float DoseAcumuladaMin;
-        float DoseAcumuladaMax;
-    */
     public:
         ControleQueima(float Dose, float qMax);
         void aplicar(Sensor* sensor, Atuador* atuador) override;

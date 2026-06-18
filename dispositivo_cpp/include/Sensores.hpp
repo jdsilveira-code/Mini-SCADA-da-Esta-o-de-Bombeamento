@@ -13,7 +13,6 @@ class Sensor {
         GeradorAleatorio gerador;
         int ValorMax;
         int ValorMin;
-
         void atualizarTimestamp();
 
     public:

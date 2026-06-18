@@ -9,9 +9,10 @@ class EstrategiaAlarme {
         int LimiteMin;
         int LimiteMax;
         std::string Tag;
+        std::string StatusAlarme;
 
     public:
-        EstrategiaAlarme(int min, int max, std::string tag);
+        EstrategiaAlarme(int min, int max, std::string tag, std::string Status);
         EstrategiaAlarme(int max, std::string tag);
         virtual void verificar(Sensor* sensor) = 0;
         virtual ~EstrategiaAlarme() {}
