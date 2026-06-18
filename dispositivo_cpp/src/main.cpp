@@ -3,21 +3,16 @@
 #include "../include/EstrategiaControle.hpp"
 #include "../include/Atuadores.hpp"
 #include "../include/Sensores.hpp"
+#include "../include/Alarmes.hpp"
 
+// Constantes de configuração dos limites de controle do EstrategiaControle.
 constexpr float NIVEL_MIN_PCT = 20.0f;
 constexpr float NIVEL_MAX_PCT = 80.0f;
 constexpr float TEMP_MAX_C    = 350.0f;
 constexpr float DOSE_MIN_MSV  = 10.0f;
 constexpr float DOSE_MAX_MSV  = 200.0f;
 
-constexpr std::string TagNivel = "SNV-01";
-constexpr std::string TagTemp = "STM-01";
-constexpr std::string TagRadiacao = "SRD-01";
-constexpr std::string TagVazao = "SVZ-01";
-
-constexpr std::string TagBomba = "BAG-01";
-constexpr std::string TagVaretas = "VAR-01";
-
+// Constantes de configuração dos limites de operção dos sensores.
 constexpr int LimiteMinNivel = 0;
 constexpr int LimiteMaxNivel = 100;
 constexpr int LimiteMinTemp = 250;
@@ -27,6 +22,26 @@ constexpr int LimiteMaxRadiacao = 50;
 constexpr int LimiteMinVazao = 0;
 constexpr int LimiteMaxVazao = 200;
 
+// Tags dos sensores e atuadores
+constexpr std::string TagNivel = "SNV-01";
+constexpr std::string TagTemp = "STM-01";
+constexpr std::string TagRadiacao = "SRD-01";
+constexpr std::string TagVazao = "SVZ-01";
+
+constexpr std::string TagBomba = "BAG-01";
+constexpr std::string TagVaretas = "VAR-01";
+
+// Constantes de configuração dos limites de operação dos alarmes.
+constexpr int LimiteMinAlarmeTemp = 300;
+constexpr int LimiteMaxAlarmeTemp = 350;
+constexpr int LimiteMinAlarmeNivel = 30;
+constexpr int LimiteMaxAlarmeNivel = 99;
+constexpr int LimiteMinAlarmeRadiacao = 0;
+constexpr int LimiteMaxAlarmeRadiacao = 100;
+constexpr int LimiteMinAlarmeVazao = 0;
+constexpr int LimiteMaxAlarmeVazao = 200;
+
+// Número de ciclos de leitura e controle a serem executados no main.
 const int CICLOS = 5;
 
 static void printSeparador() {
