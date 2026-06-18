@@ -1,6 +1,18 @@
 #include "EstrategiaControle.hpp"
+#include <iostream>
 
-ControleNivel::ControleNivel(float baixo, float alto) : nivelBaixo(baixo), nivelAlto(alto) {}
+// Construtores da classe base
+EstrategiaControle::EstrategiaControle(int min, int max, std::string tag)
+    : LimiteMin(min), LimiteMax(max), Tag(std::move(tag)) {}
+
+EstrategiaControle::EstrategiaControle(int max, std::string tag)
+    : LimiteMin(0), LimiteMax(max), Tag(std::move(tag)) {}
+
+// Controle de nível: usa valor genérico do sensor e métodos polimórficos do atuador
+ControleNivel::ControleNivel(float baixo, float alto)
+    : EstrategiaControle(static_cast<int>(baixo), static_cast<int>(alto), "ControleNivel") {
+    Modo = "Nivel";
+}
 
 void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorNivel* sNivel = dynamic_cast<SensorNivel*>(sensor);
@@ -8,14 +20,21 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 
     float nivel = sNivel->getValorAtual();
 
-    if (nivel < nivelBaixo) {
+    if (valor <= LimiteMin) {
+        atuador->setPotencia(75.0f);
         atuador->ligar();
-    } else if (nivel > nivelAlto) {
+    } else if (valor >= LimiteMax) {
         atuador->desligar();
+    } else {
+        atuador->setPotencia(50.0f);
     }
 }
 
-ControleTemperatura::ControleTemperatura(float RMax) : RadMax(RMax) {}
+// Controle de temperatura: usa apenas getValorAtual() e ligar/desligar
+ControleTemperatura::ControleTemperatura(float RMax)
+    : EstrategiaControle(0, static_cast<int>(RMax), "ControleTemperatura") {
+    Modo = "Temperatura";
+}
 
 void ControleTemperatura::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorTemp* sTemp = dynamic_cast<SensorTemp*>(sensor);

@@ -16,6 +16,7 @@ class EstrategiaControle {
         virtual ~EstrategiaControle() {}
 };
 
+
 class ControleNivel : public EstrategiaControle {
     private:
 
@@ -42,4 +43,4 @@ class ControleQueima : public EstrategiaControle {
         void aplicar(Sensor* sensor, Atuador* atuador) override;
 };
 
-#endif // ESTRATEGIA_CONTROLE_HPP
+#endif
