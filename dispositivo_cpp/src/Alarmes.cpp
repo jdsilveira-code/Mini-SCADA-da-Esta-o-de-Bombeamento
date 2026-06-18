@@ -40,6 +40,7 @@ void AlarmeNivel::verificar(Sensor* sensor) {
 }
 
 
+
 AlarmeRadiacao::AlarmeRadiacao(int limiteMaximo)
 : limiteMaximo(limiteMaximo), tag(tag), StatusAlarme(StatusAlarme) {}
 

@@ -3,6 +3,7 @@
 
 #include "Sensores.hpp"
 #include <string>
+#include <string>
 
 class EstrategiaAlarme {
     protected:
@@ -18,6 +19,23 @@ class EstrategiaAlarme {
         virtual ~EstrategiaAlarme() {}
 };
 
+/*
+class GerenciadorAlarme {
+    public:
+        // inicializa com os limites definidos nos comentários
+        EstrategiaAlarme alarmeTemperatura{600, 1750, "LT-101"};
+        EstrategiaAlarme alarmeNivel{50, 99, ""};
+        EstrategiaAlarme alarmeRadiacao{100, ""};
+        EstrategiaAlarme alarmeVazao{10, 500, ""};
+};
+
+*/;
+
+
+
+
+
+#endif // ALARMES_HPP
 class AlarmeTemperatura : public EstrategiaAlarme {
     public:
         AlarmeTemperatura(int limiteMinimo, int limiteMaximo);
