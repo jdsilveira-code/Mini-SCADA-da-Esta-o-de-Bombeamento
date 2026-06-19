@@ -98,16 +98,7 @@ int main() {
 
         printSeparador();
 
-        // Garantir que a pasta de saída exista e gravar leituras em JSON Lines
-        // Garantir que a pasta de saída exista (portátil)
-    #if defined(_WIN32)
-        if (_mkdir("output") != 0) {
-            // _mkdir retorna -1 se já existe ou erro; não tratamos aqui
-        }
-    #else
-        mkdir("output", 0755);
-    #endif
-
+        // Gravar leituras em JSON Lines
         std::ofstream ofs("output/readings.jl", std::ios::app);
         if (ofs) {
             ofs << JsonExporter::gerarJsonLeitura(sNivel) << '\n';
