@@ -1,72 +1,79 @@
 #include "Alarmes.hpp"
+#include "Sensores.hpp"
 
-AlarmeTemperatura::AlarmeTemperatura(int limiteMinimo, int limiteMaximo)
-    : limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
+
+AlarmeTemperatura::AlarmeTemperatura(int limiteMinimo, int limiteMaximo, std::string tag, std::StatusAlarme)
+: limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo), tag(tag), StatusAlarme(StatusAlarme) {}
 
 void AlarmeTemperatura::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    
+    tag = sensor->getTag()
     int valor = sensor->getValorAtual();
     if (valor < limiteMinimo) {
-        sensor->setStatus("ALERTA - TEMPERATURA BAIXA");
+        StatusAlarme = "ALERTA - TEMPERATURA BAIXA";
     } else if (valor > limiteMaximo) {
-        sensor->setStatus("ALERTA - TEMPERATURA ALTA");
+        StatusAlarme = "ALERTA - TEMPERATURA ALTA";
     } else {
-        sensor->setStatus("OPERACIONAL");
+        StatusAlarme = "Normal";
     }
 }
 
 AlarmeNivel::AlarmeNivel(int limiteMinimo, int limiteMaximo)
-    : limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
+: limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) tag(tag), StatusAlarme(StatusAlarme){}
 
 void AlarmeNivel::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    tag = sensor->getTag()
     int valor = sensor->getValorAtual();
     if (valor < limiteMinimo) {
-        sensor->setStatus("ALERTA - NÍVEL BAIXO");
+        StatusAlarme = "ALERTA - NÍVEL BAIXO";
     } else if (valor > limiteMaximo) {
-        sensor->setStatus("ALERTA - NÍVEL ALTO");
+        StatusAlarme = "ALERTA - NÍVEL ALTO";
     } else {
-        sensor->setStatus("OPERACIONAL");
+        StatusAlarme = "Normal";
     }
 }
-        
+
+
 
 AlarmeRadiacao::AlarmeRadiacao(int limiteMaximo)
-    : limiteMaximo(limiteMaximo) {}
+: limiteMaximo(limiteMaximo), tag(tag), StatusAlarme(StatusAlarme) {}
 
 void AlarmeRadiacao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
+    tag = sensor->getTag()
 
     int valor = sensor->getValorAtual();
     if (valor > limiteMaximo) {
-        sensor->setStatus("ALERTA");
+        StatusAlarme = "ALERTA - RADIAÇÃO ALTA";
     } else {
-        sensor->setStatus("OPERACIONAL");
+        StatusAlarme = "Normal";
     }
 }
 
 AlarmeVazao::AlarmeVazao(int limiteMinimo, int limiteMaximo)
-    : limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo) {}
+: limiteMinimo(limiteMinimo), limiteMaximo(limiteMaximo), tag(tag), StatusAlarme(StatusAlarme) {}
 
 void AlarmeVazao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
-
+    tag = sensor->getTag()
     int valor = sensor->getValorAtual();
     if (valor < limiteMinimo) {
-        sensor->setStatus("ALERTA - VAZÃO BAIXA");
+        StatusAlarme = "ALERTA - VAZÃO BAIXA";
     } else if (valor > limiteMaximo) {
-        sensor->setStatus("ALERTA - VAZÃO ALTA");
+        StatusAlarme = "ALERTA - VAZÃO ALTA";
     } else {
-        sensor->setStatus("OPERACIONAL");
+        StatusAlarme = "Normal";
     }
 }
+
+#endif;

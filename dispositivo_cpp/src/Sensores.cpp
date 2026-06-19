@@ -89,6 +89,10 @@ void SensorRadiacao::AcumularDose(int nivel, std::string timestamp) {
     Timestamp = timestamp;
 }
 
+float SensorRadiacao::getDoseAcumulada() const {
+    return DoseAcumulada;
+}
+
 SensorTemp::SensorTemp(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;

@@ -13,7 +13,6 @@ class Sensor {
         GeradorAleatorio gerador;
         int ValorMax;
         int ValorMin;
-
         void atualizarTimestamp();
 
     public:
@@ -52,6 +51,7 @@ class SensorRadiacao : public Sensor {
         int getValorAtual() const override;
 
         void AcumularDose(int nivel,std::string timestamp);
+        float getDoseAcumulada() const;
 
 };
 
