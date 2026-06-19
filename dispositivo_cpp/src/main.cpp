@@ -3,8 +3,10 @@
 #include <fstream>
 #include <thread>
 #include <chrono>
+#include <cerrno>
 #if defined(_WIN32)
 #include <direct.h>
+#include <windows.h>
 #else
 #include <sys/stat.h>
 #endif
@@ -57,7 +59,32 @@ static void printSeparador() {
     std::cout << std::string(50, '-') << "\n";
 }
 
+static bool criarDiretorioOutput() {
+#if defined(_WIN32)
+    if (_mkdir("output") == 0 || errno == EEXIST) {
+        return true;
+    }
+#else
+    if (mkdir("output", 0755) == 0 || errno == EEXIST) {
+        return true;
+    }
+#endif
+
+    std::cerr << "Erro ao criar diretorio output\n";
+    return false;
+}
+
+static void pausarEntreCiclos() {
+#if defined(_WIN32)
+    Sleep(30000);
+#else
+    std::this_thread::sleep_for(std::chrono::seconds(30));
+#endif
+}
+
 int main() {
+    criarDiretorioOutput();
+
     // Sensores
     SensorNivel    sNivel    (TagNivel, LimiteMaxNivel, LimiteMinNivel);
     SensorTemp     sTemp     (TagTemp, LimiteMaxTemp, LimiteMinTemp);
@@ -120,7 +147,7 @@ int main() {
         std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "INSERIDAS" : "RETIRADAS") << "\n";
         // no final do for, antes de fechar o bloco
 
-        std::this_thread::sleep_for(std::chrono::seconds(30));
+        pausarEntreCiclos();
     }
 
     std::cout << "\n=== FIM DOS TESTES ===\n";

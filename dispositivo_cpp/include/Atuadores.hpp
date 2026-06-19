@@ -47,6 +47,9 @@ class Varetas : public Atuador {
     public:
         Varetas(std::string tag);
 
+        void ligar() override;
+        void desligar() override;
+
         void AjustarQueima(float NovoValor);
         float getValorAtual();
 };
