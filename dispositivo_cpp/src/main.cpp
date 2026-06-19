@@ -19,7 +19,7 @@
 // Constantes de configuração dos limites de controle do EstrategiaControle.
 constexpr float NIVEL_MIN_PCT = 20.0f;
 constexpr float NIVEL_MAX_PCT = 80.0f;
-constexpr float TEMP_MAX_C    = 350.0f;
+constexpr float TEMP_MAX_K    = 350.0f;
 constexpr float DOSE_MIN_MSV  = 10.0f;
 constexpr float DOSE_MAX_MSV  = 200.0f;
 
@@ -53,7 +53,7 @@ constexpr int LimiteMinAlarmeVazao = 0;
 constexpr int LimiteMaxAlarmeVazao = 200;
 
 // Número de ciclos de leitura e controle a serem executados no main.
-const int CICLOS = 5;
+//const int CICLOS = 5;
 
 static void printSeparador() {
     std::cout << std::string(50, '-') << "\n";
@@ -74,6 +74,8 @@ static bool criarDiretorioOutput() {
     return false;
 }
 
+// Considere que 30 segundos são 30 minutos
+
 static void pausarEntreCiclos() {
 #if defined(_WIN32)
     Sleep(30000);
@@ -85,25 +87,26 @@ static void pausarEntreCiclos() {
 int main() {
     criarDiretorioOutput();
 
-    // Sensores
-    SensorNivel    sNivel    (TagNivel, LimiteMaxNivel, LimiteMinNivel);
-    SensorTemp     sTemp     (TagTemp, LimiteMaxTemp, LimiteMinTemp);
-    SensorRadiacao sRadiacao (TagRadiacao, LimiteMaxRadiacao, LimiteMinRadiacao);
-    SensorVazao    sVazao    (TagVazao, LimiteMaxVazao, LimiteMinVazao);
-
     // Atuadores
     BombaAgua bomba  (TagBomba);
     Varetas   varetas(TagVaretas);
 
+    // Sensores
+    SensorNivel    sNivel    (TagNivel, LimiteMaxNivel, LimiteMinNivel);
+    SensorTemp     sTemp     (TagTemp, LimiteMaxTemp, LimiteMinTemp);
+    SensorRadiacao sRadiacao (TagRadiacao, LimiteMaxRadiacao, LimiteMinRadiacao, &varetas);
+    SensorVazao    sVazao    (TagVazao, LimiteMaxVazao, LimiteMinVazao);
+
+
     // Estratégias
     ControleNivel       ctrlNivel  (NIVEL_MIN_PCT, NIVEL_MAX_PCT);
-    ControleTemperatura ctrlTemp   (TEMP_MAX_C);
-    ControleQueima      ctrlQueima (DOSE_MIN_MSV, DOSE_MAX_MSV, &sTemp, TEMP_MAX_C);
+    ControleTemperatura ctrlTemp   (TEMP_MAX_K);
+    ControleQueima      ctrlQueima (DOSE_MIN_MSV, DOSE_MAX_MSV, &sTemp, TEMP_MAX_K);
 
     
 
-    for (int ciclo = 1; ciclo <= CICLOS; ciclo++) {
-        std::cout << "\n=== CICLO " << ciclo << " ===\n";
+    while (true) {
+        //std::cout << "\n=== CICLO " << ciclo << " ===\n";
         printSeparador();
 
         // Leitura dos sensores
@@ -144,7 +147,7 @@ int main() {
 
         // Print do estado dos atuadores
         std::cout << "Bomba  [" << bomba.getTag()   << "]: " << (bomba.isLigado()   ? "LIGADA"   : "DESLIGADA") << "\n";
-        std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "INSERIDAS" : "RETIRADAS") << "\n";
+        std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "RETIRADAS" : "INSERIDAS") << "\n";
         // no final do for, antes de fechar o bloco
 
         pausarEntreCiclos();

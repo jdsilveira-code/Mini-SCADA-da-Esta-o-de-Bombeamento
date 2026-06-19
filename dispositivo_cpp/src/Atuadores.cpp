@@ -5,7 +5,7 @@ Atuador::Atuador(std::string tag) : Tag(tag) {}
 void Atuador::ligar() { ligado = true; }
 void Atuador::desligar() { ligado = false; }
 
-bool Atuador::isLigado() { return ligado; }
+bool Atuador::isLigado() const { return ligado; }
 std::string Atuador::getTag() { return Tag; }
 
 BombaAgua::BombaAgua(std::string tag) : Atuador(tag) {}
@@ -42,7 +42,10 @@ void Varetas::ligar() { ligado = true; }
 
 void Varetas::desligar() {
     ligado = false;
-    ValorAtual = 0.0f;
+}
+
+bool Varetas::isLigado() const {
+    return Atuador::isLigado();
 }
 
 void Varetas::AjustarQueima(float NovoValor) {
@@ -50,10 +53,13 @@ void Varetas::AjustarQueima(float NovoValor) {
         throw std::out_of_range("Queima inválida");
     
     ValorAtual = NovoValor; 
-    if (ligado && ValorAtual == 0.0f) {
-        desligar();
-    } else if (!ligado && ValorAtual > 0.0f) {
+    // Mapear semântica desejada:
+    // - ValorAtual == 0.0f  => varetas RETIRADAS (ligado == true)
+    // - ValorAtual >  0.0f  => varetas INSERIDAS  (ligado == false)
+    if (ValorAtual == 0.0f) {
         ligar();
+    } else {
+        desligar();
     }
 }
 

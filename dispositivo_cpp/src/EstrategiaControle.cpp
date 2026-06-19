@@ -12,20 +12,25 @@ ControleNivel::ControleNivel(float baixo, float alto)
 void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorNivel* sNivel = dynamic_cast<SensorNivel*>(sensor);
     BombaAgua* bomba = dynamic_cast<BombaAgua*>(atuador);
+
     if (!sNivel || !bomba) return;
 
     float nivel = static_cast<float>(sNivel->getValorAtual());
 
-    if (nivel <= LimiteMin) {
-        bomba->setPotencia(100.0f);
-        bomba->ligar();
-    } else if (nivel >= LimiteMax) {
-        bomba->desligar();
-    } else {
-        float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
-        bomba->setPotencia(potencia);
-        bomba->ligar();
+    float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
+
+    if (potencia < 0.0f){
+        potencia = 0.0f;
     }
+
+    if (potencia > 100.0f){
+        potencia = 100.0f;
+    }
+    
+
+    bomba->setPotencia(potencia);
+    bomba->ligar();
+    
 }
 
 ControleTemperatura::ControleTemperatura(float tempMax)
@@ -33,14 +38,15 @@ ControleTemperatura::ControleTemperatura(float tempMax)
 
 void ControleTemperatura::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorTemp* sTemp = dynamic_cast<SensorTemp*>(sensor);
+    BombaAgua* bomba = dynamic_cast<BombaAgua*>(atuador);
     if (!sTemp || !atuador) return;
 
     float temp = static_cast<float>(sTemp->getValorAtual());
 
     if (temp > LimiteMax) {
-        atuador->desligar();
+        bomba->ligar();
     } else {
-        atuador->ligar();
+        bomba->desligar();
     }
 }
 
@@ -61,16 +67,17 @@ ControleQueima::ControleQueima(float doseMin, float doseMax, SensorTemp* sTemp, 
 void ControleQueima::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorRadiacao* sRad = dynamic_cast<SensorRadiacao*>(sensor);
     Varetas* varetas = dynamic_cast<Varetas*>(atuador);
+    
     if (!sRad || !varetas) return;
 
-    float dose = sRad->getDoseAcumulada();
+    //float dose = sRad->getDoseAcumulada();
 
-    if (dose >= DoseAcumuladaMax) {
+    if (sRad->getDoseAcumulada() >= DoseAcumuladaMax) {
         varetas->AjustarQueima(100.0f);
         return;
     }
 
-    if (DoseAcumuladaMin >= 0.0f && dose < DoseAcumuladaMin && SensorTemperatura != nullptr) {
+    if (DoseAcumuladaMin >= 0.0f && sRad->getDoseAcumulada() < DoseAcumuladaMin && SensorTemperatura != nullptr) {
         float temp = static_cast<float>(SensorTemperatura->getValorAtual());
         if (temp < TempMax) {
             varetas->AjustarQueima(0.0f);

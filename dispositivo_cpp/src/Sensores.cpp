@@ -1,4 +1,5 @@
 #include "Sensores.hpp"
+#include "AtuadorInterfaces.hpp"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -67,13 +68,15 @@ void SensorNivel::CalcularVolume(int altura, float raio) {
     VolumeTotalMax = static_cast<float>(pi * raio * raio * altura);
 }
 
-SensorRadiacao::SensorRadiacao(std::string tag, int max, int min) {
+SensorRadiacao::SensorRadiacao(std::string tag, int max, int min, IVaretasState* atuador) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
     UnidadeMedida = "mSv/h";
     DoseAcumulada = 0.0f;
     LimiteDoseAcumulada = 0.0f;
+    varetasState = atuador;
+    Status = (varetasState != nullptr) ? varetasState->isLigado() : false;
 }
 
 void SensorRadiacao::ler() {
@@ -87,8 +90,23 @@ int SensorRadiacao::getValorAtual() const {
 }
 
 void SensorRadiacao::AcumularDose(int nivel, std::string timestamp) {
-    DoseAcumulada += nivel;
     Timestamp = timestamp;
+    // Atualiza status consultando o estado atual das varetas
+    if (varetasState != nullptr) {
+        Status = varetasState->isLigado();
+    }
+
+    float delta = static_cast<float>(nivel) / 2.0f;
+    if (Status) {
+        // Varetas RETIRADAS (reactor funcionando): acumula dose
+        DoseAcumulada += delta;
+    } else {
+        // Varetas INSERIDAS (reactor parado): reduz a dose (dissipação)
+        DoseAcumulada -= delta;
+    }
+
+    // Não permitir dose negativa
+    if (DoseAcumulada < 0.0f) DoseAcumulada = 0.0f;
 }
 
 float SensorRadiacao::getDoseAcumulada() const {
