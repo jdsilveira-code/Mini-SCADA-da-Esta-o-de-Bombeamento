@@ -1,9 +1,12 @@
 #ifndef ATUADORES_HPP
 #define ATUADORES_HPP
 
-#include "Sensores.hpp"
+#include "AtuadorInterfaces.hpp"
 #include <string>
 #include <stdexcept>
+
+// Evitar incluir Sensores.hpp aqui para reduzir acoplamento; usamos forward declaration
+class SensorNivel;
 
 class Atuador {
     protected:
@@ -16,7 +19,7 @@ class Atuador {
         virtual void ligar();
         virtual void desligar();
 
-        bool isLigado();
+        virtual bool isLigado() const;
         std::string getTag();
 
         virtual ~Atuador() {}
@@ -40,7 +43,7 @@ class BombaAgua : public Atuador {
         SensorNivel* getSensor();
 };
 
-class Varetas : public Atuador {
+class Varetas : public Atuador, public IVaretasState {
     private:
         float ValorAtual{0.0f};
 
@@ -49,6 +52,8 @@ class Varetas : public Atuador {
 
         void ligar() override;
         void desligar() override;
+
+        bool isLigado() const override;
 
         void AjustarQueima(float NovoValor);
         float getValorAtual();

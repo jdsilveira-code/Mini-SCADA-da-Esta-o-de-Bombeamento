@@ -4,6 +4,9 @@
 #include <string>
 #include "GeradorNumeros.hpp"
 
+// Forward declaration para reduzir dependência: usamos apenas a interface de estado
+class IVaretasState;
+
 class Sensor {
     protected:
         std::string Tag;
@@ -45,11 +48,12 @@ class SensorRadiacao : public Sensor {
         int NivelRadiacaoAtual;
         float DoseAcumulada;
         float LimiteDoseAcumulada;
+        IVaretasState* varetasState{nullptr};
+        bool Status;
     public:
-        SensorRadiacao(std::string tag, int max, int min);
+        SensorRadiacao(std::string tag, int max, int min, IVaretasState* atuador);
         void ler() override;
         int getValorAtual() const override;
-
         void AcumularDose(int nivel,std::string timestamp);
         float getDoseAcumulada() const;
 
