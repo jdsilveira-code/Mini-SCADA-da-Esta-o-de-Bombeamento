@@ -35,7 +35,6 @@ class GerenciadorAlarme {
 
 
 
-#endif // ALARMES_HPP
 class AlarmeTemperatura : public EstrategiaAlarme {
     public:
         AlarmeTemperatura(int limiteMinimo, int limiteMaximo);
@@ -61,4 +60,4 @@ class AlarmeVazao : public EstrategiaAlarme {
 };
 
 
-#endif;
+#endif

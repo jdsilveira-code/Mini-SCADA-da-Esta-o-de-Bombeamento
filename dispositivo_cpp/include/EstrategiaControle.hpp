@@ -4,19 +4,13 @@
 #include "Atuadores.hpp"
 #include "Sensores.hpp"
 
-#include "Sensores.hpp"
-
+class SensorTemp;
 
 class EstrategiaControle {
     protected:
         int LimiteMin;
         int LimiteMax;
-    protected:
-        int LimiteMin;
-        int LimiteMax;
     public:
-        EstrategiaControle(int limiteMin, int limiteMax);
-        EstrategiaControle(int LimiteMax);
         EstrategiaControle(int limiteMin, int limiteMax);
         EstrategiaControle(int LimiteMax);
         virtual void aplicar(Sensor* sensor, Atuador* atuador) = 0;
@@ -38,11 +32,15 @@ class ControleTemperatura : public EstrategiaControle {
 };
 
 class ControleQueima : public EstrategiaControle {
+    private:
+        float DoseAcumuladaMin;
+        float DoseAcumuladaMax;
+        float TempMax;
+        SensorTemp* SensorTemperatura;
     public:
         ControleQueima(float Dose, float qMax);
-        void aplicar(Sensor* sensor, Atuador* atuador) override;
+        ControleQueima(float DoseMin, float DoseMax, SensorTemp* sTemp, float tempMax);
         void aplicar(Sensor* sensor, Atuador* atuador) override;
 };
 
-#endif
 #endif

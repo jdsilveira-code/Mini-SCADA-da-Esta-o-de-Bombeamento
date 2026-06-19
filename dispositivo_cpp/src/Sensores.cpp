@@ -72,6 +72,8 @@ SensorRadiacao::SensorRadiacao(std::string tag, int max, int min) {
     ValorMax = max;
     ValorMin = min;
     UnidadeMedida = "mSv/h";
+    DoseAcumulada = 0.0f;
+    LimiteDoseAcumulada = 0.0f;
 }
 
 void SensorRadiacao::ler() {
@@ -119,6 +121,7 @@ SensorVazao::SensorVazao(std::string tag, int max, int min) {
     ValorMax = max;
     ValorMin = min;
     UnidadeMedida = "m3/h";
+    VazaoAcumulada = 0.0f;
 }
 
 void SensorVazao::ler() {
