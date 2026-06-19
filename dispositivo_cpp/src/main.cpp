@@ -1,9 +1,18 @@
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <thread>
+#include <chrono>
+#if defined(_WIN32)
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 #include "../include/EstrategiaControle.hpp"
 #include "../include/Atuadores.hpp"
 #include "../include/Sensores.hpp"
 #include "../include/Alarmes.hpp"
+#include "../include/JsonExporter.hpp"
 
 // Constantes de configuração dos limites de controle do EstrategiaControle.
 constexpr float NIVEL_MIN_PCT = 20.0f;
@@ -23,13 +32,13 @@ constexpr int LimiteMinVazao = 0;
 constexpr int LimiteMaxVazao = 200;
 
 // Tags dos sensores e atuadores
-constexpr std::string TagNivel = "SNV-01";
-constexpr std::string TagTemp = "STM-01";
-constexpr std::string TagRadiacao = "SRD-01";
-constexpr std::string TagVazao = "SVZ-01";
+const std::string TagNivel = "SNV-01";
+const std::string TagTemp = "STM-01";
+const std::string TagRadiacao = "SRD-01";
+const std::string TagVazao = "SVZ-01";
 
-constexpr std::string TagBomba = "BAG-01";
-constexpr std::string TagVaretas = "VAR-01";
+const std::string TagBomba = "BAG-01";
+const std::string TagVaretas = "VAR-01";
 
 // Constantes de configuração dos limites de operação dos alarmes.
 constexpr int LimiteMinAlarmeTemp = 300;
@@ -89,6 +98,27 @@ int main() {
 
         printSeparador();
 
+        // Garantir que a pasta de saída exista e gravar leituras em JSON Lines
+        // Garantir que a pasta de saída exista (portátil)
+    #if defined(_WIN32)
+        if (_mkdir("output") != 0) {
+            // _mkdir retorna -1 se já existe ou erro; não tratamos aqui
+        }
+    #else
+        mkdir("output", 0755);
+    #endif
+
+        std::ofstream ofs("output/readings.jl", std::ios::app);
+        if (ofs) {
+            ofs << JsonExporter::gerarJsonLeitura(sNivel) << '\n';
+            ofs << JsonExporter::gerarJsonLeitura(sTemp) << '\n';
+            ofs << JsonExporter::gerarJsonLeitura(sRadiacao) << '\n';
+            ofs << JsonExporter::gerarJsonLeitura(sVazao) << '\n';
+            ofs.close();
+        } else {
+            std::cerr << "Erro ao abrir arquivo output/readings.jl para escrita\n";
+        }
+
         // Aplicar estratégias
         ctrlNivel.aplicar(&sNivel, &bomba);
         ctrlTemp.aplicar(&sTemp, &bomba);
@@ -97,6 +127,9 @@ int main() {
         // Print do estado dos atuadores
         std::cout << "Bomba  [" << bomba.getTag()   << "]: " << (bomba.isLigado()   ? "LIGADA"   : "DESLIGADA") << "\n";
         std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "INSERIDAS" : "RETIRADAS") << "\n";
+        // no final do for, antes de fechar o bloco
+
+        std::this_thread::sleep_for(std::chrono::seconds(30));
     }
 
     std::cout << "\n=== FIM DOS TESTES ===\n";

@@ -45,4 +45,3 @@ class ControleQueima : public EstrategiaControle {
 };
 
 #endif
-#endif
