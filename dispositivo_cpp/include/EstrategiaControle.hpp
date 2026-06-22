@@ -15,8 +15,6 @@ class EstrategiaControle {
         virtual ~EstrategiaControle() {}
 };
 
-
-
 class ControleNivel : public EstrategiaControle {
     public:
         ControleNivel(float baixo, float alto);
