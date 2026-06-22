@@ -19,6 +19,8 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 
     float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
 
+
+    // Garantir que a potência esteja dentro do intervalo de 0 a 100
     if (potencia < 0.0f){
         potencia = 0.0f;
     }

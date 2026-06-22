@@ -4,9 +4,12 @@
 #include <string>
 #include "Sensores.hpp"
 
+class EstrategiaAlarme;
+
 class JsonExporter {
 public:
     static std::string gerarJsonLeitura(Sensor& sensor);
+    static std::string gerarJsonAlarme(EstrategiaAlarme& alarme);
 };
 
 #endif // JSON_EXPORTER_HPP

@@ -3,7 +3,6 @@
 
 #include "Sensores.hpp"
 #include <string>
-#include <string>
 
 class EstrategiaAlarme {
     protected:
@@ -11,53 +10,41 @@ class EstrategiaAlarme {
         int LimiteMax;
         std::string Tag;
         std::string StatusAlarme;
+        std::string Timestamp;
+        void atualizarTimestamp();
 
     public:
         EstrategiaAlarme(int min, int max, std::string tag, std::string Status);
         EstrategiaAlarme(int max, std::string tag);
         virtual void verificar(Sensor* sensor) = 0;
+        std::string getTag() const { return Tag; }
+        std::string getStatusAlarme() const { return StatusAlarme; }
+        std::string getTimestamp() const { return Timestamp; }
         virtual ~EstrategiaAlarme() {}
 };
 
-/*
-class GerenciadorAlarme {
-    public:
-        // inicializa com os limites definidos nos comentários
-        EstrategiaAlarme alarmeTemperatura{600, 1750, "LT-101"};
-        EstrategiaAlarme alarmeNivel{50, 99, ""};
-        EstrategiaAlarme alarmeRadiacao{100, ""};
-        EstrategiaAlarme alarmeVazao{10, 500, ""};
-};
-
-*/;
-
-
-
-
-
 class AlarmeTemperatura : public EstrategiaAlarme {
     public:
-        AlarmeTemperatura(int limiteMinimo, int limiteMaximo);
+        AlarmeTemperatura(int limiteMinimo, int limiteMaximo, std::string tag);
         void verificar(Sensor* sensor) override;
 };
 
 class AlarmeNivel : public EstrategiaAlarme {
     public:
-        AlarmeNivel(int limiteMinimo, int limiteMaximo);
+        AlarmeNivel(int limiteMinimo, int limiteMaximo, std::string tag);
         void verificar(Sensor* sensor) override;
 };
-    
+
 class AlarmeRadiacao : public EstrategiaAlarme {
     public:
-        AlarmeRadiacao(int limiteMaximo);
+        AlarmeRadiacao(int limiteMaximo, std::string tag);
         void verificar(Sensor* sensor) override;
 };
 
 class AlarmeVazao : public EstrategiaAlarme {
     public:
-        AlarmeVazao(int limiteMinimo, int limiteMaximo);
+        AlarmeVazao(int limiteMinimo, int limiteMaximo, std::string tag);
         void verificar(Sensor* sensor) override;
 };
-
 
 #endif

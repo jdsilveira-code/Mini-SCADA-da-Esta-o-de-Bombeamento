@@ -33,12 +33,13 @@ constexpr int LimiteMaxRadiacao = 50;
 constexpr int LimiteMinVazao = 0;
 constexpr int LimiteMaxVazao = 200;
 
-// Tags dos sensores e atuadores
+// Tags dos sensores
 const std::string TagNivel = "SNV-01";
 const std::string TagTemp = "STM-01";
 const std::string TagRadiacao = "SRD-01";
 const std::string TagVazao = "SVZ-01";
 
+// Tags dos atuadores
 const std::string TagBomba = "BAG-01";
 const std::string TagVaretas = "VAR-01";
 
@@ -52,13 +53,11 @@ constexpr int LimiteMaxAlarmeRadiacao = 100;
 constexpr int LimiteMinAlarmeVazao = 0;
 constexpr int LimiteMaxAlarmeVazao = 200;
 
-// Número de ciclos de leitura e controle a serem executados no main.
-//const int CICLOS = 5;
-
 static void printSeparador() {
     std::cout << std::string(50, '-') << "\n";
 }
 
+// Função para criar o diretório "output" se ele não existir, garantindo que o programa possa salvar os arquivos de leitura.
 static bool criarDiretorioOutput() {
 #if defined(_WIN32)
     if (_mkdir("output") == 0 || errno == EEXIST) {
@@ -75,7 +74,6 @@ static bool criarDiretorioOutput() {
 }
 
 // Considere que 30 segundos são 30 minutos
-
 static void pausarEntreCiclos() {
 #if defined(_WIN32)
     Sleep(30000);
@@ -85,6 +83,7 @@ static void pausarEntreCiclos() {
 }
 
 int main() {
+    // Criar diretório de saída para os arquivos de leitura
     criarDiretorioOutput();
 
     // Atuadores
@@ -97,16 +96,23 @@ int main() {
     SensorRadiacao sRadiacao (TagRadiacao, LimiteMaxRadiacao, LimiteMinRadiacao, &varetas);
     SensorVazao    sVazao    (TagVazao, LimiteMaxVazao, LimiteMinVazao);
 
-
     // Estratégias
     ControleNivel       ctrlNivel  (NIVEL_MIN_PCT, NIVEL_MAX_PCT);
     ControleTemperatura ctrlTemp   (TEMP_MAX_K);
     ControleQueima      ctrlQueima (DOSE_MIN_MSV, DOSE_MAX_MSV, &sTemp, TEMP_MAX_K);
 
-    
+    // Alarmes
+    AlarmeNivel AlarmeNivel(LimiteMinAlarmeNivel, LimiteMaxAlarmeNivel, sNivel.getTag());
+    AlarmeTemperatura AlarmeTemperatura(LimiteMinAlarmeTemp, LimiteMaxAlarmeTemp, sTemp.getTag());
+    AlarmeRadiacao AlarmeRadiacao(LimiteMaxAlarmeRadiacao, sRadiacao.getTag());
+    AlarmeVazao AlarmeVazao(LimiteMinAlarmeVazao, LimiteMaxAlarmeVazao, sVazao.getTag());
 
+    int ciclo = 0;
+
+    // Loop principal de simulação, representando os ciclos de operação do sistema.
     while (true) {
-        //std::cout << "\n=== CICLO " << ciclo << " ===\n";
+        std::cout << "\n=== CICLO " << ciclo << " ===\n";
+
         printSeparador();
 
         // Leitura dos sensores
@@ -115,6 +121,16 @@ int main() {
         sRadiacao.ler();
         sVazao.ler();
 
+        AlarmeNivel.verificar(&sNivel);
+        AlarmeTemperatura.verificar(&sTemp);
+        AlarmeRadiacao.verificar(&sRadiacao);
+        AlarmeVazao.verificar(&sVazao);
+        
+        // Aplicar estratégias
+        ctrlNivel.aplicar(&sNivel, &bomba);
+        ctrlTemp.aplicar(&sTemp, &bomba);
+        ctrlQueima.aplicar(&sRadiacao, &varetas);
+        
         // Print das leituras
         std::cout << "[" << sNivel.getTimestamp()    << "] "
                   << sNivel.getTag()    << " = " << sNivel.getValorAtual()    << " " << sNivel.getUnidadeMedida()    << "\n";
@@ -127,6 +143,16 @@ int main() {
                   << sVazao.getTag()    << " = " << sVazao.getValorAtual()    << " " << sVazao.getUnidadeMedida()    << "\n";
 
         printSeparador();
+        // Print do estado dos atuadores
+        std::cout << "Bomba  [" << bomba.getTag()   << "]: " << (bomba.isLigado()   ? "LIGADA"   : "DESLIGADA") << "\n";
+        std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "RETIRADAS" : "INSERIDAS") << "\n";
+        
+        printSeparador();
+        // Print do estado dos alarmes
+        std::cout << "Alarme [" << AlarmeNivel.getTag()         << "]: " << AlarmeNivel.getStatusAlarme()         << "\n";
+        std::cout << "Alarme [" << AlarmeTemperatura.getTag()   << "]: " << AlarmeTemperatura.getStatusAlarme()   << "\n";
+        std::cout << "Alarme [" << AlarmeRadiacao.getTag()      << "]: " << AlarmeRadiacao.getStatusAlarme()      << "\n";
+        std::cout << "Alarme [" << AlarmeVazao.getTag()         << "]: " << AlarmeVazao.getStatusAlarme()         << "\n";
 
         // Gravar leituras em JSON Lines
         std::ofstream ofs("output/readings.jl", std::ios::app);
@@ -135,21 +161,14 @@ int main() {
             ofs << JsonExporter::gerarJsonLeitura(sTemp) << '\n';
             ofs << JsonExporter::gerarJsonLeitura(sRadiacao) << '\n';
             ofs << JsonExporter::gerarJsonLeitura(sVazao) << '\n';
+            ofs << JsonExporter::gerarJsonAlarme(AlarmeNivel) << '\n';
+            ofs << JsonExporter::gerarJsonAlarme(AlarmeTemperatura) << '\n';
+            ofs << JsonExporter::gerarJsonAlarme(AlarmeRadiacao) << '\n';
+            ofs << JsonExporter::gerarJsonAlarme(AlarmeVazao) << '\n';
             ofs.close();
         } else {
             std::cerr << "Erro ao abrir arquivo output/readings.jl para escrita\n";
         }
-
-        // Aplicar estratégias
-        ctrlNivel.aplicar(&sNivel, &bomba);
-        ctrlTemp.aplicar(&sTemp, &bomba);
-        ctrlQueima.aplicar(&sRadiacao, &varetas);
-
-        // Print do estado dos atuadores
-        std::cout << "Bomba  [" << bomba.getTag()   << "]: " << (bomba.isLigado()   ? "LIGADA"   : "DESLIGADA") << "\n";
-        std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "RETIRADAS" : "INSERIDAS") << "\n";
-        // no final do for, antes de fechar o bloco
-
         pausarEntreCiclos();
     }
 
