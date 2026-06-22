@@ -52,9 +52,9 @@ void AlarmeNivel::verificar(Sensor* sensor) {
     atualizarTimestamp();
     int valor = sensor->getValorAtual();
     if (valor < LimiteMin) {
-        StatusAlarme = "ALERTA - NÍVEL BAIXO";
+        StatusAlarme = "ALERTA - NIVEL BAIXO";
     } else if (valor > LimiteMax) {
-        StatusAlarme = "ALERTA - NÍVEL ALTO";
+        StatusAlarme = "ALERTA - NIVEL ALTO";
     } else {
         StatusAlarme = "Normal";
     }
@@ -72,7 +72,7 @@ void AlarmeRadiacao::verificar(Sensor* sensor) {
     atualizarTimestamp();
     int valor = sensor->getValorAtual();
     if (valor > LimiteMax) {
-        StatusAlarme = "ALERTA - RADIAÇÃO ALTA";
+        StatusAlarme = "ALERTA - RADIACAO ALTA";
     } else {
         StatusAlarme = "Normal";
     }
@@ -88,9 +88,9 @@ void AlarmeVazao::verificar(Sensor* sensor) {
     atualizarTimestamp();
     int valor = sensor->getValorAtual();
     if (valor < LimiteMin) {
-        StatusAlarme = "ALERTA - VAZÃO BAIXA";
+        StatusAlarme = "ALERTA - VAZAO BAIXA";
     } else if (valor > LimiteMax) {
-        StatusAlarme = "ALERTA - VAZÃO ALTA";
+        StatusAlarme = "ALERTA - VAZAO ALTA";
     } else {
         StatusAlarme = "Normal";
     }

@@ -50,3 +50,15 @@
 | 30 - 50% | Alarme Crítico | Reduzir potência do reator |
 | 10 - 30% | Emergência | Iniciar sistema de resfriamento de emergência |
 | < 10% | Perigo Extremo | SCRAM (desligamento imediato) |
+
+
+
+## ESTRATEGIAS DE CONTROLE
+
+De acordo com as informações vindas dos sensores, os atuatores tomam certar atitudes
+
+ControleTemperatura: se a temperatura estiver maior que o limite maximo, a bomba liga para resfriar o reator
+
+ControleQueima: se a Dose Acumilada passar da maxima ele ajusta as varetas para inibir a queima de combustivel
+
+ControleVNivel: a potencia da bomba fica se ajustando automaticamente com forme uma formula, se o nivel estiver baixo, ele aumenta a potencia, e se o nivel estiver alto, ele desliga a bomba

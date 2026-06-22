@@ -20,7 +20,7 @@
 constexpr float NIVEL_MIN_PCT = 20.0f;
 constexpr float NIVEL_MAX_PCT = 80.0f;
 constexpr float TEMP_MAX_K    = 350.0f;
-constexpr float DOSE_MIN_MSV  = 10.0f;
+constexpr float DOSE_MIN_MSV  = 50.0f;
 constexpr float DOSE_MAX_MSV  = 200.0f;
 
 // Constantes de configuração dos limites de operção dos sensores.
@@ -49,9 +49,9 @@ constexpr int LimiteMaxAlarmeTemp = 350;
 constexpr int LimiteMinAlarmeNivel = 30;
 constexpr int LimiteMaxAlarmeNivel = 99;
 constexpr int LimiteMinAlarmeRadiacao = 0;
-constexpr int LimiteMaxAlarmeRadiacao = 100;
+constexpr int LimiteMaxAlarmeRadiacao = 40;
 constexpr int LimiteMinAlarmeVazao = 0;
-constexpr int LimiteMaxAlarmeVazao = 200;
+constexpr int LimiteMaxAlarmeVazao = 180;
 
 static void printSeparador() {
     std::cout << std::string(50, '-') << "\n";
@@ -76,7 +76,7 @@ static bool criarDiretorioOutput() {
 // Considere que 30 segundos são 30 minutos
 static void pausarEntreCiclos() {
 #if defined(_WIN32)
-    Sleep(30000);
+    Sleep(5000);
 #else
     std::this_thread::sleep_for(std::chrono::seconds(30));
 #endif
@@ -169,6 +169,8 @@ int main() {
         } else {
             std::cerr << "Erro ao abrir arquivo output/readings.jl para escrita\n";
         }
+
+        ciclo++;
         pausarEntreCiclos();
     }
 

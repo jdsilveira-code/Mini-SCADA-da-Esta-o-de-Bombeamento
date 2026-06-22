@@ -17,7 +17,7 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 
     float nivel = static_cast<float>(sNivel->getValorAtual());
 
-    float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
+    float potencia = ((LimiteMax - nivel) / (LimiteMax - LimiteMin)) * 100.0f;
 
 
     // Garantir que a potência esteja dentro do intervalo de 0 a 100
