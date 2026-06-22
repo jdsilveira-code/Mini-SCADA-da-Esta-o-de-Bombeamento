@@ -4,8 +4,6 @@
 #include "Atuadores.hpp"
 #include "Sensores.hpp"
 
-class SensorTemp;
-
 class EstrategiaControle {
     protected:
         int LimiteMin;
