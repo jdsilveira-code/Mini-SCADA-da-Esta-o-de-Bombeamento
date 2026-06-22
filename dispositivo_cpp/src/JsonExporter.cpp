@@ -1,4 +1,5 @@
 #include "JsonExporter.hpp"
+#include "Sensores.hpp"
 #include "Alarmes.hpp"
 #include <sstream>
 
