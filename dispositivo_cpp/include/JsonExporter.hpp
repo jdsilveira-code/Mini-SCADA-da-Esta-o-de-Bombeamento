@@ -2,8 +2,8 @@
 #define JSON_EXPORTER_HPP
 
 #include <string>
-#include "Sensores.hpp"
 
+class Sensor;
 class EstrategiaAlarme;
 
 class JsonExporter {

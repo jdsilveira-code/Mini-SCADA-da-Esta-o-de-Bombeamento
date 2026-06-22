@@ -5,9 +5,6 @@
 #include <string>
 #include <stdexcept>
 
-// Evitar incluir Sensores.hpp aqui para reduzir acoplamento; usamos forward declaration
-class SensorNivel;
-
 class Atuador {
     protected:
         std::string Tag;
@@ -28,7 +25,6 @@ class Atuador {
 class BombaAgua : public Atuador {
     private:
         float Potencia{0.0f};
-        SensorNivel* sensorNivel{nullptr};
 
     public:
         BombaAgua(std::string tag);
@@ -38,9 +34,6 @@ class BombaAgua : public Atuador {
 
         void setPotencia(float NovaPotencia);
         float getPotencia();
-
-        void vincularSensor(SensorNivel* sensor);
-        SensorNivel* getSensor();
 };
 
 class Varetas : public Atuador, public IVaretasState {

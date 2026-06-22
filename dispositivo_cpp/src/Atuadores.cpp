@@ -33,9 +33,6 @@ void BombaAgua::setPotencia(float NovaPotencia) {
 
 float BombaAgua::getPotencia() { return Potencia; }
 
-void BombaAgua::vincularSensor(SensorNivel* sensor) { sensorNivel = sensor; }
-SensorNivel* BombaAgua::getSensor() { return sensorNivel; }
-
 Varetas::Varetas(std::string tag) : Atuador(tag) {}
 
 void Varetas::ligar() { ligado = true; }

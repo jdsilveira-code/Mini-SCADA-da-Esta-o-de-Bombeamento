@@ -4,8 +4,6 @@
 #include "Atuadores.hpp"
 #include "Sensores.hpp"
 
-class SensorTemp;
-
 class EstrategiaControle {
     protected:
         int LimiteMin;
@@ -16,8 +14,6 @@ class EstrategiaControle {
         virtual void aplicar(Sensor* sensor, Atuador* atuador) = 0;
         virtual ~EstrategiaControle() {}
 };
-
-
 
 class ControleNivel : public EstrategiaControle {
     public:
