@@ -1,8 +1,14 @@
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+
+try:
+    from streamlit_autorefresh import st_autorefresh
+except ImportError:
+    st_autorefresh = None
 
 
 st.set_page_config(
@@ -19,6 +25,7 @@ POSSIVEIS_ARQUIVOS_LEITURA = [
 ]
 
 ARQUIVO_COMANDOS = BASE_DIR / "output" / "commands.jl"
+INTERVALO_ATUALIZACAO_PADRAO_S = 5
 
 
 LIMITES_SENSORES = {
@@ -80,6 +87,61 @@ def carregar_jsonl(caminho):
                 })
 
     return pd.DataFrame(registros)
+
+
+def ativar_atualizacao_automatica():
+    st.sidebar.subheader("Atualizacao")
+
+    atualizar = st.sidebar.toggle(
+        "Atualizar automaticamente",
+        value=True,
+    )
+
+    intervalo_s = st.sidebar.slider(
+        "Intervalo",
+        min_value=2,
+        max_value=30,
+        value=INTERVALO_ATUALIZACAO_PADRAO_S,
+        step=1,
+        format="%d s",
+    )
+
+    if st.sidebar.button("Atualizar agora", use_container_width=True):
+        st.rerun()
+
+    if not atualizar:
+        st.sidebar.caption("Atualizacao automatica pausada.")
+        return
+
+    if st_autorefresh is None:
+        st.sidebar.warning(
+            "Instale streamlit-autorefresh para atualizar sem recarregar a pagina."
+        )
+        return
+
+    contador = st_autorefresh(
+        interval=intervalo_s * 1000,
+        key="atualizacao_automatica",
+    )
+
+    st.sidebar.caption(f"Atualizacao automatica ativa. Ciclo: {contador}")
+
+
+def registrar_comando(tag, acao):
+    comando = {
+        "tipo": "comando",
+        "tag": tag,
+        "acao": acao,
+        "origem": "supervisor",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    ARQUIVO_COMANDOS.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(ARQUIVO_COMANDOS, "a", encoding="utf-8") as arquivo:
+        arquivo.write(json.dumps(comando) + "\n")
+
+    st.session_state["ultimo_comando"] = comando
 
 
 def preparar_dataframe(df):
@@ -149,6 +211,7 @@ df = preparar_dataframe(df)
 st.title("Mini-SCADA - Supervisor da Estacao")
 
 st.caption(f"Arquivo monitorado: {arquivo_leitura}")
+ativar_atualizacao_automatica()
 
 if df.empty:
     st.warning("Nenhuma leitura encontrada ainda. Execute o programa C++ para gerar o arquivo readings.jl.")
@@ -320,6 +383,35 @@ else:
         historico_consulta,
         use_container_width=True,
         hide_index=True,
+    )
+
+
+st.subheader("Comandos das varetas")
+
+col_cmd1, col_cmd2, col_cmd3 = st.columns(3)
+
+with col_cmd1:
+    if st.button("Automatico", use_container_width=True):
+        registrar_comando("VAR-01", "AUTOMATICO")
+        st.success("Comando enviado: controle automatico das varetas")
+
+with col_cmd2:
+    if st.button("Inserir manualmente", use_container_width=True):
+        registrar_comando("VAR-01", "INSERIR")
+        st.success("Comando enviado: inserir varetas manualmente")
+
+with col_cmd3:
+    if st.button("Retirar manualmente", use_container_width=True):
+        registrar_comando("VAR-01", "RETIRAR")
+        st.success("Comando enviado: retirar varetas manualmente")
+
+ultimo_comando = st.session_state.get("ultimo_comando")
+
+if ultimo_comando:
+    st.info(
+        "Ultimo comando gerado: "
+        f"{ultimo_comando['acao']} em {ultimo_comando['tag']} "
+        f"as {ultimo_comando['timestamp']}"
     )
 
 

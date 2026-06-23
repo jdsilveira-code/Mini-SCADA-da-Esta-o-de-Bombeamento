@@ -1,6 +1,7 @@
 #include "JsonExporter.hpp"
 #include "Sensores.hpp"
 #include "Alarmes.hpp"
+#include "Atuadores.hpp"
 #include <sstream>
 
 std::string JsonExporter::gerarJsonLeitura(Sensor& sensor) {
@@ -22,6 +23,30 @@ std::string JsonExporter::gerarJsonAlarme(EstrategiaAlarme& alarme) {
 		 << "\"tipo\": \"alarme\", "
 		 << "\"status\": \"" << alarme.getStatusAlarme() << "\", "
 		 << "\"timestamp\": \"" << alarme.getTimestamp() << "\""
+		 << "}";
+	return json.str();
+}
+
+std::string JsonExporter::gerarJsonAtuadorBomba(BombaAgua& bomba, const std::string& timestamp) {
+	std::ostringstream json;
+	json << "{"
+		 << "\"tipo\": \"atuador\", "
+		 << "\"tag\": \"" << bomba.getTag() << "\", "
+		 << "\"estado\": \"" << (bomba.isLigado() ? "LIGADA" : "DESLIGADA") << "\", "
+		 << "\"potencia\": " << bomba.getPotencia() << ", "
+		 << "\"timestamp\": \"" << timestamp << "\""
+		 << "}";
+	return json.str();
+}
+
+std::string JsonExporter::gerarJsonAtuadorVaretas(Varetas& varetas, const std::string& timestamp) {
+	std::ostringstream json;
+	json << "{"
+		 << "\"tipo\": \"atuador\", "
+		 << "\"tag\": \"" << varetas.getTag() << "\", "
+		 << "\"estado\": \"" << (varetas.isLigado() ? "RETIRADAS" : "INSERIDAS") << "\", "
+		 << "\"valor\": " << varetas.getValorAtual() << ", "
+		 << "\"timestamp\": \"" << timestamp << "\""
 		 << "}";
 	return json.str();
 }
