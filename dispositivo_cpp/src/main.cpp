@@ -43,15 +43,12 @@ const std::string TagVaretas = "VAR-01";
 // Constantes de configuração dos limites de operação dos alarmes.
 constexpr int LimiteMinAlarmeNivel = 30;
 constexpr int LimiteMaxAlarmeNivel = 99;
-<<<<<<< HEAD
-constexpr int LimiteMinAlarmeRadiacao = 0;
-=======
+
 constexpr int LimiteMinAlarmeTemp = 300;
 constexpr int LimiteMaxAlarmeTemp = 350;
 constexpr int LimiteMinAlarmeRadiacao = 10;
->>>>>>> 31cf19317d9a5f55f85538120698611aa15a068b
 constexpr int LimiteMaxAlarmeRadiacao = 40;
-constexpr int LimiteMinAlarmeVazao = 0;
+constexpr int LimiteMinAlarmeVazao = 10;
 constexpr int LimiteMaxAlarmeVazao = 180;
 
 static void printSeparador() {

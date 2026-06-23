@@ -18,23 +18,8 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 
     float nivel = static_cast<float>(sNivel->getValorAtual());
 
-<<<<<<< HEAD
     float potencia = ((LimiteMax - nivel) / (LimiteMax - LimiteMin)) * 100.0f;
-
-
-    // Garantir que a potência esteja dentro do intervalo de 0 a 100
-    if (potencia < 0.0f){
-        potencia = 0.0f;
-    }
-
-    if (potencia > 100.0f){
-        potencia = 100.0f;
-    }
-    
-=======
-    float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
     potencia = std::clamp(potencia, 0.0f, 100.0f);
->>>>>>> 31cf19317d9a5f55f85538120698611aa15a068b
 
     bomba->setPotencia(potencia);
     bomba->ligar();
