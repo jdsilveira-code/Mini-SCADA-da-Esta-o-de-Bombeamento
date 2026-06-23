@@ -1,8 +1,9 @@
 #ifndef ALARMES_HPP
 #define ALARMES_HPP
 
-#include "Sensores.hpp"
 #include <string>
+
+class Sensor;
 
 class EstrategiaAlarme {
     protected:
@@ -14,8 +15,7 @@ class EstrategiaAlarme {
         void atualizarTimestamp();
 
     public:
-        EstrategiaAlarme(int min, int max, std::string tag, std::string Status);
-        EstrategiaAlarme(int max, std::string tag);
+        EstrategiaAlarme(int min, int max, const std::string& tag);
         virtual void verificar(Sensor* sensor) = 0;
         std::string getTag() const { return Tag; }
         std::string getStatusAlarme() const { return StatusAlarme; }
@@ -25,25 +25,25 @@ class EstrategiaAlarme {
 
 class AlarmeTemperatura : public EstrategiaAlarme {
     public:
-        AlarmeTemperatura(int limiteMinimo, int limiteMaximo, std::string tag);
+        AlarmeTemperatura(int limiteMinimo, int limiteMaximo, const std::string& tag);
         void verificar(Sensor* sensor) override;
 };
 
 class AlarmeNivel : public EstrategiaAlarme {
     public:
-        AlarmeNivel(int limiteMinimo, int limiteMaximo, std::string tag);
+        AlarmeNivel(int limiteMinimo, int limiteMaximo, const std::string& tag);
         void verificar(Sensor* sensor) override;
 };
 
 class AlarmeRadiacao : public EstrategiaAlarme {
     public:
-        AlarmeRadiacao(int limiteMaximo, std::string tag);
+        AlarmeRadiacao(int limiteMaximo, const std::string& tag);
         void verificar(Sensor* sensor) override;
 };
 
 class AlarmeVazao : public EstrategiaAlarme {
     public:
-        AlarmeVazao(int limiteMinimo, int limiteMaximo, std::string tag);
+        AlarmeVazao(int limiteMinimo, int limiteMaximo, const std::string& tag);
         void verificar(Sensor* sensor) override;
 };
 

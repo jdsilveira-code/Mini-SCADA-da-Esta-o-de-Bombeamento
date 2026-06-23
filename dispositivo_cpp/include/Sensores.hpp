@@ -49,7 +49,7 @@ class SensorRadiacao : public Sensor {
         float DoseAcumulada;
         float LimiteDoseAcumulada;
         IVaretasState* varetasState{nullptr};
-        bool Status;
+        bool varetasRetiradas{false};
     public:
         SensorRadiacao(std::string tag, int max, int min, IVaretasState* atuador);
         void ler() override;

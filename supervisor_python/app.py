@@ -206,7 +206,7 @@ else:
 
     st.dataframe(
         leituras_atuais[colunas_existentes],
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
 
@@ -259,7 +259,7 @@ else:
 
     st.dataframe(
         atuadores_atuais,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
 
@@ -288,7 +288,7 @@ else:
 
     st.dataframe(
         alarmes_ordenados[colunas_existentes],
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
 
@@ -318,7 +318,7 @@ else:
 
     st.dataframe(
         historico_consulta,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
 
@@ -339,7 +339,7 @@ else:
 
     st.dataframe(
         comandos,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
 
@@ -360,7 +360,7 @@ if problemas:
 
     st.dataframe(
         df_problemas,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
 else:

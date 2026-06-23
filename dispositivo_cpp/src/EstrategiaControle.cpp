@@ -1,13 +1,14 @@
 #include "EstrategiaControle.hpp"
+#include <algorithm>
 
-EstrategiaControle::EstrategiaControle(int limiteMin, int limiteMax)
+EstrategiaControle::EstrategiaControle(float limiteMin, float limiteMax)
     : LimiteMin(limiteMin), LimiteMax(limiteMax) {}
 
-EstrategiaControle::EstrategiaControle(int limiteMax)
-    : LimiteMin(0), LimiteMax(limiteMax) {}
+EstrategiaControle::EstrategiaControle(float limiteMax)
+    : LimiteMin(0.0f), LimiteMax(limiteMax) {}
 
 ControleNivel::ControleNivel(float baixo, float alto)
-    : EstrategiaControle(static_cast<int>(baixo), static_cast<int>(alto)) {}
+    : EstrategiaControle(baixo, alto) {}
 
 void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorNivel* sNivel = dynamic_cast<SensorNivel*>(sensor);
@@ -17,6 +18,7 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 
     float nivel = static_cast<float>(sNivel->getValorAtual());
 
+<<<<<<< HEAD
     float potencia = ((LimiteMax - nivel) / (LimiteMax - LimiteMin)) * 100.0f;
 
 
@@ -29,6 +31,10 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
         potencia = 100.0f;
     }
     
+=======
+    float potencia = ((nivel - LimiteMin) / (LimiteMax - LimiteMin)) * 100.0f;
+    potencia = std::clamp(potencia, 0.0f, 100.0f);
+>>>>>>> 31cf19317d9a5f55f85538120698611aa15a068b
 
     bomba->setPotencia(potencia);
     bomba->ligar();
@@ -36,12 +42,12 @@ void ControleNivel::aplicar(Sensor* sensor, Atuador* atuador) {
 }
 
 ControleTemperatura::ControleTemperatura(float tempMax)
-    : EstrategiaControle(static_cast<int>(tempMax)) {}
+    : EstrategiaControle(tempMax) {}
 
 void ControleTemperatura::aplicar(Sensor* sensor, Atuador* atuador) {
     SensorTemp* sTemp = dynamic_cast<SensorTemp*>(sensor);
     BombaAgua* bomba = dynamic_cast<BombaAgua*>(atuador);
-    if (!sTemp || !atuador) return;
+    if (!sTemp || !bomba) return;
 
     float temp = static_cast<float>(sTemp->getValorAtual());
 
@@ -53,14 +59,14 @@ void ControleTemperatura::aplicar(Sensor* sensor, Atuador* atuador) {
 }
 
 ControleQueima::ControleQueima(float dose, float qMax)
-    : EstrategiaControle(static_cast<int>(dose), static_cast<int>(qMax)),
+    : EstrategiaControle(dose, qMax),
       DoseAcumuladaMin(-1.0f),
       DoseAcumuladaMax(dose),
       TempMax(qMax),
       SensorTemperatura(nullptr) {}
 
 ControleQueima::ControleQueima(float doseMin, float doseMax, SensorTemp* sTemp, float tempMax)
-    : EstrategiaControle(static_cast<int>(doseMin), static_cast<int>(doseMax)),
+    : EstrategiaControle(doseMin, doseMax),
       DoseAcumuladaMin(doseMin),
       DoseAcumuladaMax(doseMax),
       TempMax(tempMax),
@@ -71,8 +77,6 @@ void ControleQueima::aplicar(Sensor* sensor, Atuador* atuador) {
     Varetas* varetas = dynamic_cast<Varetas*>(atuador);
     
     if (!sRad || !varetas) return;
-
-    //float dose = sRad->getDoseAcumulada();
 
     if (sRad->getDoseAcumulada() >= DoseAcumuladaMax) {
         varetas->AjustarQueima(100.0f);
