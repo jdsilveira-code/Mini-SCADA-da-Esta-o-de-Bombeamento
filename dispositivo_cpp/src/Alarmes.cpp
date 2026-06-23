@@ -18,14 +18,11 @@ void EstrategiaAlarme::atualizarTimestamp() {
     Timestamp = saida.str();
 }
 
-EstrategiaAlarme::EstrategiaAlarme(int min, int max, std::string tag, std::string Status)
-    : LimiteMin(min), LimiteMax(max), Tag(tag), StatusAlarme(Status) {}
+EstrategiaAlarme::EstrategiaAlarme(int min, int max, const std::string& tag)
+    : LimiteMin(min), LimiteMax(max), Tag(tag), StatusAlarme("Normal") {}
 
-EstrategiaAlarme::EstrategiaAlarme(int max, std::string tag)
-    : LimiteMin(0), LimiteMax(max), Tag(tag), StatusAlarme("Normal") {}
-
-AlarmeTemperatura::AlarmeTemperatura(int limiteMinimo, int limiteMaximo, std::string tag)
-    : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag, "Normal") {}
+AlarmeTemperatura::AlarmeTemperatura(int limiteMinimo, int limiteMaximo, const std::string& tag)
+    : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag) {}
 
 void AlarmeTemperatura::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
@@ -42,8 +39,8 @@ void AlarmeTemperatura::verificar(Sensor* sensor) {
     }
 }
 
-AlarmeNivel::AlarmeNivel(int limiteMinimo, int limiteMaximo, std::string tag)
-    : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag, "Normal") {}
+AlarmeNivel::AlarmeNivel(int limiteMinimo, int limiteMaximo, const std::string& tag)
+    : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag) {}
 
 void AlarmeNivel::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
@@ -60,10 +57,8 @@ void AlarmeNivel::verificar(Sensor* sensor) {
     }
 }
 
-
-
-AlarmeRadiacao::AlarmeRadiacao(int limiteMaximo, std::string tag)
-    : EstrategiaAlarme(0, limiteMaximo, tag, "Normal") {}
+AlarmeRadiacao::AlarmeRadiacao(int limiteMaximo, const std::string& tag)
+    : EstrategiaAlarme(0, limiteMaximo, tag) {}
 
 void AlarmeRadiacao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
@@ -78,8 +73,8 @@ void AlarmeRadiacao::verificar(Sensor* sensor) {
     }
 }
 
-AlarmeVazao::AlarmeVazao(int limiteMinimo, int limiteMaximo, std::string tag)
-    : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag, "Normal") {}
+AlarmeVazao::AlarmeVazao(int limiteMinimo, int limiteMaximo, const std::string& tag)
+    : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag) {}
 
 void AlarmeVazao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
@@ -95,4 +90,3 @@ void AlarmeVazao::verificar(Sensor* sensor) {
         StatusAlarme = "Normal";
     }
 }
-

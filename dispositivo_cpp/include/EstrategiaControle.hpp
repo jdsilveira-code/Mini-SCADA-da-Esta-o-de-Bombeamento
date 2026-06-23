@@ -6,11 +6,11 @@
 
 class EstrategiaControle {
     protected:
-        int LimiteMin;
-        int LimiteMax;
+        float LimiteMin;
+        float LimiteMax;
     public:
-        EstrategiaControle(int limiteMin, int limiteMax);
-        EstrategiaControle(int LimiteMax);
+        EstrategiaControle(float limiteMin, float limiteMax);
+        EstrategiaControle(float limiteMax);
         virtual void aplicar(Sensor* sensor, Atuador* atuador) = 0;
         virtual ~EstrategiaControle() {}
 };
