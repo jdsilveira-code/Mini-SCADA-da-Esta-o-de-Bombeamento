@@ -76,7 +76,7 @@ SensorRadiacao::SensorRadiacao(std::string tag, int max, int min, IVaretasState*
     DoseAcumulada = 0.0f;
     LimiteDoseAcumulada = 0.0f;
     varetasState = atuador;
-    Status = (varetasState != nullptr) ? varetasState->isLigado() : false;
+    varetasRetiradas = (varetasState != nullptr) ? varetasState->isLigado() : false;
 }
 
 void SensorRadiacao::ler() {
@@ -93,16 +93,21 @@ void SensorRadiacao::AcumularDose(int nivel, std::string timestamp) {
     Timestamp = timestamp;
     // Atualiza status consultando o estado atual das varetas
     if (varetasState != nullptr) {
-        Status = varetasState->isLigado();
+        varetasRetiradas = varetasState->isLigado();
     }
 
-    float delta = static_cast<float>(nivel) / 2.0f;
+<<<<<<< HEAD
+    float delta = static_cast<float>(nivel);
     if (Status) {
+=======
+    float delta = static_cast<float>(nivel) / 2.0f;
+    if (varetasRetiradas) {
+>>>>>>> 31cf19317d9a5f55f85538120698611aa15a068b
         // Varetas RETIRADAS (reactor funcionando): acumula dose
-        DoseAcumulada += delta;
+        DoseAcumulada += delta/2;
     } else {
         // Varetas INSERIDAS (reactor parado): reduz a dose (dissipação)
-        DoseAcumulada -= delta;
+        DoseAcumulada -= delta/2;
     }
 
     // Não permitir dose negativa
