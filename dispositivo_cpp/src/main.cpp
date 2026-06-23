@@ -41,12 +41,12 @@ const std::string TagBomba = "BAG-01";
 const std::string TagVaretas = "VAR-01";
 
 // Constantes de configuração dos limites de operação dos alarmes.
-constexpr int LimiteMinAlarmeTemp = 300;
-constexpr int LimiteMaxAlarmeTemp = 350;
 constexpr int LimiteMinAlarmeNivel = 30;
 constexpr int LimiteMaxAlarmeNivel = 99;
-constexpr int LimiteMinAlarmeRadiacao = 0;
-constexpr int LimiteMaxAlarmeRadiacao = 100;
+constexpr int LimiteMinAlarmeTemp = 300;
+constexpr int LimiteMaxAlarmeTemp = 350;
+constexpr int LimiteMinAlarmeRadiacao = 10;
+constexpr int LimiteMaxAlarmeRadiacao = 40;
 constexpr int LimiteMinAlarmeVazao = 0;
 constexpr int LimiteMaxAlarmeVazao = 200;
 
@@ -54,8 +54,7 @@ static void printSeparador() {
     std::cout << std::string(50, '-') << "\n";
 }
 
-// Retorna o caminho absoluto para output/ na raiz do projeto,
-// resolvido a partir do local de main.cpp em tempo de compilação.
+// Retorna o caminho absoluto para output/ na raiz do projeto
 static std::filesystem::path getOutputDir() {
     // __FILE__: dispositivo_cpp/src/main.cpp → sobe 3 níveis → raiz do projeto
     std::filesystem::path srcFile = std::filesystem::absolute(__FILE__);

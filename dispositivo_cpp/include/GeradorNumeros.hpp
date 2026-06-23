@@ -4,9 +4,6 @@
 #include <random>
 
 class GeradorAleatorio {
-private:
-    std::mt19937 gerador;
-
 public:
     GeradorAleatorio();
     int decimal(int minimo, int maximo);
