@@ -3,13 +3,10 @@
 #include <fstream>
 #include <thread>
 #include <chrono>
-#include <cerrno>
+#include <filesystem>
 #include <string>
 #if defined(_WIN32)
-#include <direct.h>
 #include <windows.h>
-#else
-#include <sys/stat.h>
 #endif
 #include "../include/EstrategiaControle.hpp"
 #include "../include/Atuadores.hpp"
@@ -45,33 +42,38 @@ const std::string TagBomba = "BAG-01";
 const std::string TagVaretas = "VAR-01";
 
 // Constantes de configuração dos limites de operação dos alarmes.
-constexpr int LimiteMinAlarmeTemp = 300;
-constexpr int LimiteMaxAlarmeTemp = 350;
 constexpr int LimiteMinAlarmeNivel = 30;
 constexpr int LimiteMaxAlarmeNivel = 99;
-constexpr int LimiteMinAlarmeRadiacao = 0;
+
+constexpr int LimiteMinAlarmeTemp = 300;
+constexpr int LimiteMaxAlarmeTemp = 350;
+constexpr int LimiteMinAlarmeRadiacao = 10;
 constexpr int LimiteMaxAlarmeRadiacao = 40;
-constexpr int LimiteMinAlarmeVazao = 0;
+constexpr int LimiteMinAlarmeVazao = 10;
 constexpr int LimiteMaxAlarmeVazao = 180;
 
 static void printSeparador() {
     std::cout << std::string(50, '-') << "\n";
 }
 
-// Função para criar o diretório "output" se ele não existir, garantindo que o programa possa salvar os arquivos de leitura.
-static bool criarDiretorioOutput() {
-#if defined(_WIN32)
-    if (_mkdir("output") == 0 || errno == EEXIST) {
-        return true;
-    }
-#else
-    if (mkdir("output", 0755) == 0 || errno == EEXIST) {
-        return true;
-    }
-#endif
+// Retorna o caminho absoluto para output/ na raiz do projeto
+static std::filesystem::path getOutputDir() {
+    // __FILE__: dispositivo_cpp/src/main.cpp → sobe 3 níveis → raiz do projeto
+    std::filesystem::path srcFile = std::filesystem::absolute(__FILE__);
+    return srcFile.parent_path()   // src/
+                  .parent_path()   // dispositivo_cpp/
+                  .parent_path()   // raiz do projeto
+           / "output";
+}
 
-    std::cerr << "Erro ao criar diretorio output\n";
-    return false;
+static bool criarDiretorioOutput(const std::filesystem::path& dir) {
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
+    if (ec) {
+        std::cerr << "Erro ao criar diretorio output: " << ec.message() << "\n";
+        return false;
+    }
+    return true;
 }
 
 // Considere que 30 segundos são 30 minutos
@@ -124,8 +126,8 @@ static void aplicarComandoSupervisor(Varetas& varetas) {
 }
 
 int main() {
-    // Criar diretório de saída para os arquivos de leitura
-    criarDiretorioOutput();
+    const std::filesystem::path outputDir = getOutputDir();
+    criarDiretorioOutput(outputDir);
 
     // Atuadores
     BombaAgua bomba  (TagBomba);
@@ -197,7 +199,7 @@ int main() {
         std::cout << "Alarme [" << AlarmeVazao.getTag()         << "]: " << AlarmeVazao.getStatusAlarme()         << "\n";
 
         // Gravar leituras em JSON Lines
-        std::ofstream ofs("output/readings.jl", std::ios::app);
+        std::ofstream ofs((outputDir / "readings.jl").string(), std::ios::app);
         if (ofs) {
             ofs << JsonExporter::gerarJsonLeitura(sNivel) << '\n';
             ofs << JsonExporter::gerarJsonLeitura(sTemp) << '\n';
@@ -211,7 +213,7 @@ int main() {
             ofs << JsonExporter::gerarJsonAtuadorVaretas(varetas, sNivel.getTimestamp()) << '\n';
             ofs.close();
         } else {
-            std::cerr << "Erro ao abrir arquivo output/readings.jl para escrita\n";
+            std::cerr << "Erro ao abrir arquivo " << (outputDir / "readings.jl").string() << " para escrita\n";
         }
 
         ciclo++;
