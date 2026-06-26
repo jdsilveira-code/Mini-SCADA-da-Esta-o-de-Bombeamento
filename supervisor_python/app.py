@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+
 try:
     from streamlit_autorefresh import st_autorefresh
 except ImportError:
