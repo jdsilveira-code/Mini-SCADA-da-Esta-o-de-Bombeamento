@@ -42,8 +42,8 @@ LIMITES_SENSORES = {
         "min": 0,
         "max": 50,
     },
-    "SVZ-01": {
-        "nome": "Vazao",
+    "SPR-01": {
+        "nome": "Pressao",
         "min": 0,
         "max": 200,
     },
@@ -425,6 +425,24 @@ with col_cmd3:
     if st.button("Retirar manualmente", use_container_width=True):
         registrar_comando("VAR-01", "RETIRAR")
         st.success("Comando enviado: retirar varetas manualmente")
+
+st.subheader("Comandos da bomba")
+col_b1, col_b2, col_b3 = st.columns(3)
+
+with col_b1:
+    if st.button("Automatico", key="bomba_automatico", use_container_width=True):
+        registrar_comando("BAG-01", "AUTOMATICO")
+        st.success("Comando enviado: controle automatico da bomba")
+
+with col_b2:
+    if st.button("Ligar manualmente", key="bomba_ligar", use_container_width=True):
+        registrar_comando("BAG-01", "LIGAR")
+        st.success("Comando enviado: ligar bomba manualmente")
+
+with col_b3:
+    if st.button("Desligar manualmente", key="bomba_desligar", use_container_width=True):
+        registrar_comando("BAG-01", "DESLIGAR")
+        st.success("Comando enviado: desligar bomba manualmente")
 
 ultimo_comando = st.session_state.get("ultimo_comando")
 

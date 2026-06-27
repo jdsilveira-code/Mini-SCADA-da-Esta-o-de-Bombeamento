@@ -71,16 +71,13 @@ class SensorTemp : public Sensor {
         void ConverterKelvinCelsius(int tempKelvin);
 };
 
-class SensorVazao : public Sensor {
+class SensorPressao : public Sensor {
     private:
-        int VazaoAtual;
-        float VazaoAcumulada;
+        int PressaoAtual;
     public:
-        SensorVazao(std::string tag, int max, int min);
+        SensorPressao(std::string tag, int max, int min);
         void ler() override;
         int getValorAtual() const override;
-
-        void AcumularVazao(int vazao,std::string timestamp);
 };
 
 #endif // SENSORES_HPP
