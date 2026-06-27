@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <filesystem>
+#include <string>
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -80,8 +81,48 @@ static void pausarEntreCiclos() {
 #if defined(_WIN32)
     Sleep(5000);
 #else
-    std::this_thread::sleep_for(std::chrono::seconds(30));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 #endif
+}
+
+static std::string lerUltimoComandoVaretas() {
+    std::ifstream arquivo("output/commands.jl");
+    std::string linha;
+    std::string ultimaAcao;
+
+    if (!arquivo) {
+        return ultimaAcao;
+    }
+
+    while (std::getline(arquivo, linha)) {
+        if (linha.find("VAR-01") == std::string::npos) {
+            continue;
+        }
+
+        if (linha.find("AUTOMATICO") != std::string::npos) {
+            ultimaAcao = "AUTOMATICO";
+        } else if (linha.find("INSERIR") != std::string::npos) {
+            ultimaAcao = "INSERIR";
+        } else if (linha.find("RETIRAR") != std::string::npos) {
+            ultimaAcao = "RETIRAR";
+        }
+    }
+
+    return ultimaAcao;
+}
+
+static void aplicarComandoSupervisor(Varetas& varetas) {
+    const std::string acao = lerUltimoComandoVaretas();
+
+    if (acao == "INSERIR") {
+        varetas.AjustarQueima(100.0f);
+        std::cout << "Comando supervisor: varetas INSERIDAS\n";
+    } else if (acao == "RETIRAR") {
+        varetas.AjustarQueima(0.0f);
+        std::cout << "Comando supervisor: varetas RETIRADAS\n";
+    } else if (acao == "AUTOMATICO") {
+        std::cout << "Comando supervisor: varetas em controle automatico\n";
+    }
 }
 
 int main() {
@@ -132,6 +173,7 @@ int main() {
         ctrlNivel.aplicar(&sNivel, &bomba);
         ctrlTemp.aplicar(&sTemp, &bomba);
         ctrlQueima.aplicar(&sRadiacao, &varetas);
+        aplicarComandoSupervisor(varetas);
         
         // Print das leituras
         std::cout << "[" << sNivel.getTimestamp()    << "] "
@@ -167,6 +209,8 @@ int main() {
             ofs << JsonExporter::gerarJsonAlarme(AlarmeTemperatura) << '\n';
             ofs << JsonExporter::gerarJsonAlarme(AlarmeRadiacao) << '\n';
             ofs << JsonExporter::gerarJsonAlarme(AlarmeVazao) << '\n';
+            ofs << JsonExporter::gerarJsonAtuadorBomba(bomba, sNivel.getTimestamp()) << '\n';
+            ofs << JsonExporter::gerarJsonAtuadorVaretas(varetas, sNivel.getTimestamp()) << '\n';
             ofs.close();
         } else {
             std::cerr << "Erro ao abrir arquivo " << (outputDir / "readings.jl").string() << " para escrita\n";

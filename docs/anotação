@@ -1,0 +1,27 @@
+
+
+CRIAR REGRA DE CONTROLE MANUAL E AUTOMATICA PUXANDO DO FRONT END
+
+ADICIONAR UMA REGRA DE CONTROLE (FAZER UMA RELAÇAO ENTRE POTENCIA E SENSOR DE VZAO PARA REGRA DE CONTROLE)
+
+TALVEZ TIRAR O ALRME DE SENSOR DE VAZAO
+
+FAZER A FALHA SIMULADA
+
+TERMINAR O READEME(FAZER O CONTRATO JSON, ANOTAR OS LIMITES DOS SENSORES ETC)
+
+histórico em CSV ou SQLite
+
+testes cobrindo regras principais e parâmetros da dupla
+
+
+
+
+
+como rodar o codigo
+
+em python: streamlit run supervisor_python/app.python
+
+em cpp
+g++ -I dispositivo_cpp/include dispositivo_cpp/src/*.cpp -o meu_programa        (para atualizar o codigo)
+./meu_programa                (para rodar)

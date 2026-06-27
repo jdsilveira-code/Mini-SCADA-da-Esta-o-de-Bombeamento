@@ -96,13 +96,8 @@ void SensorRadiacao::AcumularDose(int nivel, std::string timestamp) {
         varetasRetiradas = varetasState->isLigado();
     }
 
-<<<<<<< HEAD
-    float delta = static_cast<float>(nivel);
-    if (Status) {
-=======
     float delta = static_cast<float>(nivel) / 2.0f;
     if (varetasRetiradas) {
->>>>>>> 31cf19317d9a5f55f85538120698611aa15a068b
         // Varetas RETIRADAS (reactor funcionando): acumula dose
         DoseAcumulada += delta/2;
     } else {

@@ -55,7 +55,7 @@ class SensorRadiacao : public Sensor {
         void ler() override;
         int getValorAtual() const override;
         void AcumularDose(int nivel,std::string timestamp);
-        float getDoseAcumulada() const;
+        virtual float getDoseAcumulada() const;
 
 };
 
