@@ -1,0 +1,33 @@
+# ============================================
+# TEMA COMPLETO PARA STREAMLIT
+# ============================================
+
+[theme]
+
+# Cor principal (usada em botões, links, toggles, sliders, bordas de seleção, etc.)
+primaryColor = "#032204"
+
+# Cor de fundo da página (geral)
+backgroundColor = "#000000"
+
+# Cor de fundo de elementos secundários (sidebar, cards, containers)
+secondaryBackgroundColor = "#0b0f0c"
+
+# Cor do texto principal
+textColor = "#00ff0d"
+
+# Fonte (geralmente mantenha "sans serif" ou troque por "serif" se quiser)
+font = "sans serif"
+
+# ============================================
+# OPÇÕES ADICIONAIS (não obrigatórias, mas úteis)
+# ============================================
+
+# Ativar modo escuro automático? (se você não definir, o Streamlit usa o que está acima)
+base = "dark"    # descomente esta linha se quiser um tema escuro
+
+# Para tema escuro, você pode usar estas cores de exemplo:
+# primaryColor = "#BB86FC"
+# backgroundColor = "#0E1117"
+# secondaryBackgroundColor = "#262730"
+# textColor = "#FAFAFA"

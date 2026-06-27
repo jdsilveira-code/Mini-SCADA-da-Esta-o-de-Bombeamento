@@ -44,7 +44,6 @@ const std::string TagVaretas = "VAR-01";
 // Constantes de configuração dos limites de operação dos alarmes.
 constexpr int LimiteMinAlarmeNivel = 30;
 constexpr int LimiteMaxAlarmeNivel = 99;
-
 constexpr int LimiteMinAlarmeTemp = 300;
 constexpr int LimiteMaxAlarmeTemp = 350;
 constexpr int LimiteMinAlarmeRadiacao = 10;
@@ -81,7 +80,7 @@ static void pausarEntreCiclos() {
 #if defined(_WIN32)
     Sleep(5000);
 #else
-    std::this_thread::sleep_for(std::chrono::seconds(30));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 #endif
 }
 

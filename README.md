@@ -1,53 +1,224 @@
-# Mini-SCADA - Estação de Bombeamento Inteligente
+# Reator - Estação de Bombeamente
 
-Este projeto consiste em uma aplicação distribuída em duas camadas desenvolvida para simular, monitorar e controlar uma Estação de Bombeamento Inteligente. O sistema integra um dispositivo de campo de alta performance simulado em C++ e um supervisor de interface gráfica em Python com Streamlit.
+> Nesse projeto nossa ideia é monitor e controlar um tanque de água que faz parte de um reator de uma usina nuclear, com base nas leituras dos sensores, os atuadores como bomba e varetas atuam para manter o reator funcial e inteiro
 
-## Identificação e Assinatura Operacional da Dupla
+ - **Dispositivo C++:** Simula a leitura de sensores (nível, temperatura, radiação, vazão) e atuadores (varetas e bomba), gerando arquivos JSON Lines (`readings.jl` e `commands.jl`).
+- **Backend Python (`db_writer.py`):** Monitora os arquivos gerados pelo C++ e persiste os dados em CSV e SQLite.
+- **Frontend Streamlit (`app.py`):** Exibe um dashboard interativo com métricas, gráficos históricos, tabelas de alarmes e painel de controle para envio de comandos.
 
-> **Nota de Rastreabilidade:** Os parâmetros abaixo guiam os testes unitários, limites de alarme e lógicas de falha em todo o código.
+### 1. Camada de Dados e Aquisição (Backend)
+- **Componentes:** Simulador C++ e `db_writer.py`.
+- **Responsabilidade:** Capturar os dados brutos dos sensores (C++), armazená-los em arquivos `.jl` e, em seguida, consolidá-los em um banco de dados relacional (SQLite) e CSVs via Python.
+- **Tecnologias:** C++, Python, SQLite.
 
-- **ID_DUPLA:** [Insira a soma dos dígitos das matrículas aqui]
-- **Identificador da Estação:** EB-[Inserir ex: EB-17]
-- **Limite Nível Baixo:** [Inserir entre 20% e 35%]%
-- **Limite Nível Alto:** [Inserir entre 75% e 90%]%
-- **Limite Pressão Alta:** [Inserir entre 5.0 bar e 8.0 bar] bar
-- **Falha Simulada Customizada:** [Inserir ex: sensor de nível travado por 10 ciclos]
-- **Regra de Controle Extra:** [Inserir ex: bloquear partida quando motor estiver em alerta]
+### 2. Camada de Apresentação (Frontend)
+- **Componentes:** Aplicação Streamlit (`app.py`).
+- **Responsabilidade:** Interface gráfica web. Consulta os dados do `.jl` para exibir gráficos, métricas e tabelas em tempo real. Envia comandos de controle (automático, inserir, retirar) gravando no arquivo `commands.jl` para o C++ processar.
+- **Tecnologias:** Streamlit, Pandas.
+  
 
----
+  **Fluxo de Dados:**
+`C++ (Simulação)` -> `readings.jl` -> `db_writer.py` -> `SQLite (scada.db)` -> `Streamlit Dashboard`->`commands.jl` -> `C++ (Execução)`.
 
-## Arquitetura do Sistema e POO
 
-O ecossistema está dividido estritamente em duas camadas funcionais, aplicando conceitos avançados de Programação Orientada a Objetos:
+### Tabela de Limites dos Sensores
 
-1. **Dispositivo de Campo (`dispositivo_cpp/`):** Desenvolvido em C++17. Contém a modelagem matemática e de estado dos sensores, bombas, gerador de falhas e o motor de regras de automação.
-2. **Supervisor Central (`supervisor_python/`):** Desenvolvido em Python 3. Interfacia com os dados gerados via JSON Lines, gerencia a persistência histórica e provê o dashboard operacional para o operador.
+A tabela abaixo define os intervalos operacionais e os limites para disparo de alarmes de cada sensor monitorado pelo sistema.
 
-### Padrões de Projeto Adotados (Design Patterns)
+| Sensor | Unidade | Limite Operacional (Mín / Máx) | Alarme Mínimo (Abaixo de) | Alarme Máximo (Acima de) |
+| :--- | :--- | :--- | :--- | :--- |
+| Nível | m | 0 / 100 | < 30 | > 99 |
+| Temperatura | K | 250 / 400 | < 300 | > 350 |
+| Radiação | mSv/h | 0 / 50 | < 10 | > 40 |
+| Vazão | m³/h | 0 / 200 | < 10 | > 180 |
 
-- **Strategy:** Isolamento das regras de controle, permitindo que a lógica de automação mude dinamicamente ou receba novas regras sem modificar a classe principal da estação.
-- **Observer:** Desacoplamento do sistema de alarmes. Os sensores notificam os observadores registrados sem conhecer detalhes da interface ou logs.
-
----
-
-## Divisão de Responsabilidades (Matriz de Trabalho)
-
-- **Integrante A ([Nome/UserGitHub]):** Engenharia de software C++, desenvolvimento das classes de sensores, atuadores, motor de regras de controle e testes automatizados em C++.
-- **Integrante B ([Nome/UserGitHub]):** Engenharia do supervisor em Python/Streamlit, arquitetura de persistência (CSV/SQLite), validação do contrato de dados e testes em Python.
-- **Ambos Integrantes:** Modelagem do contrato JSON, arquitetura geral do sistema, documentação técnica e revisões cruzadas de Pull Requests.
 
 ---
 
-## Contrato de Comunicação (JSON Lines)
+```mermaid
+classDiagram
+    
+    Sensor<|--SensorTemp
+    Sensor<|--SensorRadiacao
+    Sensor<|--SensorNivel
+    Sensor<|--SensorVazao
+    Atuador<|--BombaAgua
+    Atuador<|--Varetas
+    Sensor --> GeradorAleatorio : usa
+    EstrategiaControle --> Atuador : controla
+    Sensor --> Json : exporta
+    Json --> Atuador : exporta
 
-Toda a troca de mensagens ou escrita de arquivos respeita rigorosamente a seguinte estrutura padrão:
+
+
+
+    class Atuador{
+        #string tag
+        #bool ligado
+        +void ligar()
+        +void desligar()
+        +bool isLigado()
+        +virtual ~Atuador()
+
+    }   
+
+    class Sensor{
+        -string Tag
+        -string UnidadeMedida
+        -string Timestamp
+        -string Status
+        -GeradorAleatorio gerador
+        -int ValorMax;
+        -int ValorMin;
+        -void atualizarTimestamp()
+        +void ler()
+        +virtual int getValorAtual()
+        +string getTag() 
+        +string getUnidadeMedida()
+        +string getTimestamp()
+        +string getStatus()
+        +void setStatus()
+        +void calibrar()
+    }
+
+    class SensorNivel{
+        -int AlturaAtual
+        -float RaioTanque
+        -float VolumeTotalMax
+        +void ler()
+        +int getValorAtual()
+        +void CalcularVolume()
+
+    }
+    class SensorRadiacao{
+        -int NivelRadiacaoAtual
+        -float DoseAcumulada
+        -float LimiteDoseAcumulada
+        -bool varetasRetiradas
+        +void ler()
+        +int getValorAtual()
+        +void AcumularDose()
+        +float getDoseAcumulada()
+    }
+    class SensorVazao{
+        -int VazaoAtual;
+        -float VazaoAcumulada;
+        +void ler()
+        +int getValorAtual()
+        +void AcumularVazao()
+    }
+
+    class SensorTemp{
+        -int TempKelvin;
+        -float TempCelsius;
+        +void ler()
+        +int getValorAtual()
+        +void ConverterKelvinCelsius()
+    }
+
+  
+
+    class BombaAgua{ 
+        -float Potencia
+        +void setPotencia()
+        +void ligar()
+        +void desligar()
+        +float getPotencia
+
+    }
+
+    class Varetas{
+        -float ValorAtual
+        +void AjustarQueima() 
+        +void ligar()
+        +void desligar()
+        +bool isLigado()
+        +float getValorAtual()
+    }
+
+    class GeradorAleatorio{
+        +GeradorAleatorio()
+
+    }
+    
+    class EstrategiaControle{
+        #float LimiteMin
+        #float LimiteMax
+        +void aplicar()
+
+    }
+
+    class Json{
+        +string gerarJsonLeitura
+        +string gerarJsonAlarme
+        +string gerarJsonAtuadorBomba
+        +string gerarJsonAtuadorVaretas
+    }
+```
+
+---
+### Contrato JSON – Alarmes
+
+**Exemplo completo de um alarme:**
 
 ```json
 {
-  "tag": "PT-01",
-  "valor": 6.2,
-  "unidade": "bar",
-  "timestamp": "2026-06-08T10:00:00Z",
-  "status": "OPERACIONAL"
+    "tag": "STM-01",
+    "tipo": "alarme",
+    "status": "ALERTA - TEMPERATURA ALTA",
+    "timestamp": "2026-06-27T12:45:10Z"
 }
 ```
+**Exemplo completo de um comando:**
+
+```json
+{
+    "tipo": "comando",
+    "tag": "VAR-01",
+    "acao": "AUTOMATICO",
+    "origem": "supervisor",
+    "timestamp": "2026-06-27T13:34:47.640708+00:00"
+}
+```
+
+### Instruções para Compilar em C++
+
+> Passo a passo para compilar em C++(WSL ou Linux)
+- cd MINI-SCADA-DA-ESTA-O-DE-BOMBEAMENTO
+- g++ -I dispositivo_cpp/include dispositivo_cpp/src/*.cpp -o meu_programa        `para atualizar o codigo caso tenha mudanças`
+- ./meu_programa `para rodar o C++`
+
+
+### instruções para executar Streamlit
+> Passo a passo para rodar o Streamlit
+- cd MINI-SCADA-DA-ESTA-O-DE-BOMBEAMENTO
+- python3 -m venv .venv
+- source .venv/bin/activate
+- pip instal -r requirements.txt
+- streamlit run supervisor_python/app.python `abra o link gerado`
+
+### instruções para executar o Banco de Dados
+>Passo a passo para rodar o Banco de Dados
+- cd MINI-SCADA-DA-ESTA-O-DE-BOMBEAMENTO/supervisor_python
+- python3 db_writer.py
+
+
+### instruções para testes
+> Os testes foram criados em formado CI, usando um yml para rodar automaticamente no GitHub Actions
+
+
+### assinatura operacional da dupla
+> a
+
+### divisão de responsabilidades
+
+> Jose davi: Responsavel pela parte de C++, fazer o main e as Estrategias de controle
+
+>Leandro: Responsavel pelo supervisorio e os banco de dados
+
+### decisões de padrões de projeto
+> Strategy: Isolamento das regras de controle, permitindo que a lógica de automação mude dinamicamente ou receba novas regras sem modificar a classe principal da estação 
+### limitações conhecidas
+- Nosso codigo roda de forma bem imediata, do tipo: 
+- leitura(sensores) -> estrategia de controle -> ação(atuadores)
+- e fica nesse ciclo infinito, onde a leitura anterior não exatamente interfere na proxima leitura,por conta de todas as leituras serem geradas aleatoriamente, exeto a dose de radiação que vai acumulando ou dissipando com o tempo.
