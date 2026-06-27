@@ -117,7 +117,7 @@ def ativar_atualizacao_automatica():
         key="atualizacao_automatica",
     )
 
-    st.sidebar.caption(f"Atualizacao automatica ativa. Ciclo: {contador}")
+    st.sidebar.caption(f"Atualizacao automatica ativa.")
 
 
 def registrar_comando(tag, acao):

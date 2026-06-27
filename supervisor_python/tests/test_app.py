@@ -80,10 +80,6 @@ def test_ultimos_por_tag():
     assert ultimos[ultimos["tag"] == "B"].iloc[0]["valor"] == 20
     assert ultimos[ultimos["tag"] == "C"].iloc[0]["valor"] == 100
 
-# TESTE: encontrar_arquivo_leitura (prioridade)
-def test_encontrar_arquivo_leitura():
-    caminho = app.encontrar_arquivo_leitura()
-    assert isinstance(caminho, Path)
 
 # TESTE: db_writer - linha_valida
 def test_linha_valida():

@@ -5,20 +5,16 @@
 [theme]
 
 # Cor principal (usada em botões, links, toggles, sliders, bordas de seleção, etc.)
-# Exemplos: #007506 (azul), #007506 (laranja), #4CAF50 (verde), #9C27B0 (roxo)
-primaryColor = "#007506"
+primaryColor = "#032204"
 
 # Cor de fundo da página (geral)
-# Exemplos: #0E1117 (branco), #0E1117 (cinza claro padrão), #0E1117 (preto)
-backgroundColor = "#0E1117"
+backgroundColor = "#000000"
 
 # Cor de fundo de elementos secundários (sidebar, cards, containers)
-# Exemplos: #0E1117 (branco), #0E1117 (azul claro), #2D2D2D (cinza escuro)
-secondaryBackgroundColor = "#0E1117"
+secondaryBackgroundColor = "#0b0f0c"
 
 # Cor do texto principal
-# Exemplos: #00FF0B (cinza escuro padrão), #00FF0B (branco), #0E1117 (preto)
-textColor = "#00FF0B"
+textColor = "#00ff0d"
 
 # Fonte (geralmente mantenha "sans serif" ou troque por "serif" se quiser)
 font = "sans serif"
@@ -28,7 +24,7 @@ font = "sans serif"
 # ============================================
 
 # Ativar modo escuro automático? (se você não definir, o Streamlit usa o que está acima)
-# base = "dark"    # descomente esta linha se quiser um tema escuro
+base = "dark"    # descomente esta linha se quiser um tema escuro
 
 # Para tema escuro, você pode usar estas cores de exemplo:
 # primaryColor = "#BB86FC"
