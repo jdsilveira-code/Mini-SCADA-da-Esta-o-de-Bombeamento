@@ -13,20 +13,17 @@ except ImportError:
 
 
 st.set_page_config(
-    page_title="Mini-SCADA - Supervisor",
+    page_title="REATOR - Supervisor",
     layout="wide"
 )
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-POSSIVEIS_ARQUIVOS_LEITURA = [
-    BASE_DIR / "output" / "readings.jl",
-    BASE_DIR / "dispositivo_cpp" / "output" / "readings.jl",
-]
+
 
 ARQUIVO_COMANDOS = BASE_DIR / "output" / "commands.jl"
-INTERVALO_ATUALIZACAO_PADRAO_S = 5
+INTERVALO_ATUALIZACAO_PADRAO_S = 2
 
 
 LIMITES_SENSORES = {
@@ -53,12 +50,7 @@ LIMITES_SENSORES = {
 }
 
 
-def encontrar_arquivo_leitura():
-    for caminho in POSSIVEIS_ARQUIVOS_LEITURA:
-        if caminho.exists():
-            return caminho
 
-    return POSSIVEIS_ARQUIVOS_LEITURA[0]
 
 
 def carregar_jsonl(caminho):
@@ -204,12 +196,12 @@ def ultimos_por_tag(df):
     return df.groupby("tag", as_index=False).tail(1).sort_values("tag")
 
 
-arquivo_leitura = encontrar_arquivo_leitura()
+arquivo_leitura = arquivo_leitura = BASE_DIR / "output" / "readings.jl"
 
 df = carregar_jsonl(arquivo_leitura)
 df = preparar_dataframe(df)
 
-st.title("Mini-SCADA - Supervisor da Estacao")
+st.title("REATOR - Supervisor da Estacao")
 
 st.caption(f"Arquivo monitorado: {arquivo_leitura}")
 ativar_atualizacao_automatica()
@@ -259,8 +251,7 @@ else:
         "valor",
         "unidade",
         "timestamp",
-        "status",
-        "status_validado",
+        
     ]
 
     colunas_existentes = [
@@ -321,8 +312,22 @@ if atuadores.empty:
 else:
     atuadores_atuais = ultimos_por_tag(atuadores)
 
+    colunas_atuadores = [
+        "tag",
+        "timestamp",
+        "status",
+        "valor",
+        "_linha"
+    ]
+
+    colunas_existentes = [
+    coluna for coluna in colunas_atuadores
+    if coluna in atuadores_atuais.columns
+    ]
+
+
     st.dataframe(
-        atuadores_atuais,
+        atuadores_atuais[colunas_existentes],
         use_container_width=True,
         hide_index=True,
     )
@@ -380,8 +385,23 @@ else:
         na_position="last",
     )
 
+    colunas_consulta = [
+        "tag",
+        "valor",
+        "unidade",
+        "timestamp",
+        "status",
+        "status_validado",
+    ]
+
+    colunas_existentes_consulta = [
+        coluna for coluna in colunas_consulta
+        if coluna in historico_consulta.columns
+    ]
+
+
     st.dataframe(
-        historico_consulta,
+        historico_consulta[colunas_existentes_consulta],
         use_container_width=True,
         hide_index=True,
     )
