@@ -49,14 +49,14 @@ def test_carregar_jsonl_invalido():
 # TESTE: validar_leituras com valores dentro e fora dos limites
 def test_validar_leituras():
     dados = [
-        {"tag": "SNV-03", "valor": 50, "status": "OPERACIONAL"},   #valido
-        {"tag": "SNV-03", "valor": 150, "status": "OPERACIONAL"},  #invalido
-        {"tag": "STM-03", "valor": 300, "status": "OPERACIONAL"},  #valido
-        {"tag": "STM-03", "valor": 500, "status": "OPERACIONAL"},  #invalido
-        {"tag": "SRD-03", "valor": 25, "status": "OPERACIONAL"},   #valido
-        {"tag": "SRD-03", "valor": 60, "status": "OPERACIONAL"},   #invalido
-        {"tag": "SPR-03", "valor": 100, "status": "OPERACIONAL"},  #valido
-        {"tag": "SPR-03", "valor": 250, "status": "OPERACIONAL"},  #invalido
+        {"tag": "SNV-03", "valor": 50, "status": "OPERACIONAL"},   #válido
+        {"tag": "SNV-03", "valor": 150, "status": "OPERACIONAL"},  #inválido
+        {"tag": "STM-03", "valor": 300, "status": "OPERACIONAL"},  #válido
+        {"tag": "STM-03", "valor": 500, "status": "OPERACIONAL"},  #inválido
+        {"tag": "SRD-03", "valor": 25, "status": "OPERACIONAL"},   #válido
+        {"tag": "SRD-03", "valor": 60, "status": "OPERACIONAL"},   #inválido
+        {"tag": "SPR-03", "valor": 100, "status": "OPERACIONAL"},  #válido
+        {"tag": "SPR-03", "valor": 250, "status": "OPERACIONAL"},  #inválido
     ]
     df = pd.DataFrame(dados)
     df_validado = app.validar_leituras(df)
@@ -80,7 +80,6 @@ def test_ultimos_por_tag():
     assert ultimos[ultimos["tag"] == "B"].iloc[0]["valor"] == 20
     assert ultimos[ultimos["tag"] == "C"].iloc[0]["valor"] == 100
 
-
 # TESTE: db_writer - linha_valida
 def test_linha_valida():
     assert db_writer.linha_valida('{"a":1}') == True
@@ -95,7 +94,7 @@ def test_posicoes(tmp_path):
     db_writer.salvar_posicao(pos_file, 10)
     assert db_writer.ler_posicao(pos_file) == 10
 
-# TESTE: extração de dose_acumulada do DataFrame
+# TESTE: extração de dose_acumulada do DataFrame (único)
 def test_extracao_dose_acumulada():
     dados = [
         {"tag": "SRD-03", "valor": 30, "dose_acumulada": 150.5},
@@ -104,7 +103,6 @@ def test_extracao_dose_acumulada():
     ]
     df = pd.DataFrame(dados)
 
-    # Simula a lógica de extração do app.py
     dose_acumulada = None
     if not df.empty and "dose_acumulada" in df.columns:
         rad_df = df[df["tag"] == "SRD-03"].dropna(subset=["dose_acumulada"])
@@ -112,3 +110,35 @@ def test_extracao_dose_acumulada():
             dose_acumulada = rad_df.iloc[-1]["dose_acumulada"]
 
     assert dose_acumulada == 160.2
+
+# TESTE: db_writer - EventBus notifica subscribers
+def test_event_bus_notifica_subscribers():
+    eventos = []
+
+    def callback(evento):
+        eventos.append(evento)
+
+    bus = db_writer.EventBus()
+    bus.subscribe(callback)
+    bus.publish({"tipo": "persistencia", "tabela": "leituras", "quantidade": 1})
+
+    assert eventos == [{"tipo": "persistencia", "tabela": "leituras", "quantidade": 1}]
+
+# TESTE: registrar_comando escreve no arquivo commands.jl
+def test_registrar_comando(tmp_path):
+    import app
+    original_commands = app.ARQUIVO_COMANDOS
+    app.ARQUIVO_COMANDOS = tmp_path / "commands.jl"
+
+    try:
+        app.registrar_comando("BAG-03", "DESLIGAR")
+        with open(app.ARQUIVO_COMANDOS, "r") as f:
+            conteudo = f.read().strip()
+        assert "BAG-03" in conteudo
+        assert "DESLIGAR" in conteudo
+        assert "comando" in conteudo
+        dados = json.loads(conteudo)
+        assert dados["tag"] == "BAG-03"
+        assert dados["acao"] == "DESLIGAR"
+    finally:
+        app.ARQUIVO_COMANDOS = original_commands

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 db_writer.py - Lê novas linhas dos arquivos readings.jl e commands.jl
-e as insere apenas no SQLite.
+e as insere no SQLite.
 Rode em background: python db_writer.py
 """
 
@@ -10,6 +10,7 @@ import sqlite3
 import time
 from pathlib import Path
 from datetime import datetime
+from typing import Callable, List
 
 # ---- CONFIGURAÇÕES ----
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,15 +33,28 @@ POS_COMMANDS = DATA_DIR / "commands_pos.txt"
 # Intervalo de verificação (segundos)
 INTERVALO = 2
 
+
+class EventBus:
+    """Observer simples para notificar interessados sobre eventos do sistema."""
+
+    def __init__(self):
+        self._subscribers: List[Callable[[dict], None]] = []
+
+    def subscribe(self, callback: Callable[[dict], None]) -> None:
+        self._subscribers.append(callback)
+
+    def publish(self, evento: dict) -> None:
+        for callback in self._subscribers:
+            callback(evento)
+
+
 # ---- FUNÇÕES AUXILIARES ----
 
 def ler_posicao(arquivo_pos):
-    """Retorna a última linha lida, ou 0 se não existir ou estiver vazio."""
+    """Retorna a última linha lida, ou 0 se não existir."""
     if arquivo_pos.exists():
         with open(arquivo_pos, "r") as f:
-            conteudo = f.read().strip()
-            if conteudo:  # se não estiver vazio
-                return int(conteudo)
+            return int(f.read().strip())
     return 0
 
 def salvar_posicao(arquivo_pos, pos):
@@ -66,22 +80,9 @@ def processar_arquivo_jl(caminho_jl, arquivo_pos, tabela, colunas):
     if not caminho_jl.exists():
         return 0
 
-    # Conta total de linhas para detectar truncamento
-    with open(caminho_jl, "r", encoding="utf-8") as f:
-        total_linhas = sum(1 for _ in f)
-
     pos_inicial = ler_posicao(arquivo_pos)
-
-    # Se o arquivo foi truncado, reseta a posição
-    if pos_inicial > total_linhas:
-        print(f"Arquivo {caminho_jl.name} truncado. Resetando posição.")
-        pos_inicial = 0
-        salvar_posicao(arquivo_pos, 0)
-
-    if pos_inicial >= total_linhas:
-        return 0
-
     linhas_novas = []
+
     with open(caminho_jl, "r", encoding="utf-8") as f:
         # Pula as linhas já lidas
         for _ in range(pos_inicial):
@@ -114,7 +115,15 @@ def processar_arquivo_jl(caminho_jl, arquivo_pos, tabela, colunas):
     conn.commit()
     conn.close()
 
-    # Atualiza a posição
+    # Notifica observadores sobre o lote processado (Observer funcionando de forma independente!)
+    event_bus = EventBus()
+    event_bus.publish({
+        "tipo": "persistencia",
+        "tabela": tabela,
+        "quantidade": len(linhas_novas),
+    })
+
+    # Atualiza a posição de controle
     nova_pos = pos_inicial + len(linhas_novas)
     salvar_posicao(arquivo_pos, nova_pos)
 

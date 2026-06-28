@@ -37,122 +37,256 @@ A tabela abaixo define os intervalos operacionais e os limites para disparo de a
 
 ```mermaid
 classDiagram
-    
+    %% Hierarquia de Sensores
     Sensor<|--SensorTemp
     Sensor<|--SensorRadiacao
     Sensor<|--SensorNivel
-    Sensor<|--SensorVazao
+    Sensor<|--SensorPressao
+    
+    %% Hierarquia de Atuadores
     Atuador<|--BombaAgua
     Atuador<|--Varetas
+    IVaretasState<|..Varetas
+    
+    %% Hierarquia de Estratégias de Controle
+    EstrategiaControle<|--ControleNivel
+    EstrategiaControle<|--ControleTemperatura
+    EstrategiaControle<|--ControlePressao
+    EstrategiaControle<|--ControleBombaManual
+    EstrategiaControle<|--ControleBombaAutomatico
+    EstrategiaControle<|--ControleQueima
+    EstrategiaControle<|--EstrategiaManual
+    EstrategiaControle<|--EstrategiaAutomatica
+    
+    %% Dependências de Estratégias
+    ControleBombaAutomatico --> ControleNivel : usa
+    ControleBombaAutomatico --> ControleTemperatura : usa
+    ControleBombaAutomatico --> ControlePressao : usa
+    EstrategiaAutomatica --> ControleBombaAutomatico : usa
+    EstrategiaAutomatica --> ControleQueima : usa
+    ControleQueima --> SensorRadiacao : monitora
+    ControleQueima --> SensorTemp : monitora
+    
+    %% Hierarquia de Alarmes
+    EstrategiaAlarme<|--AlarmeTemperatura
+    EstrategiaAlarme<|--AlarmeNivel
+    EstrategiaAlarme<|--AlarmeRadiacao
+    EstrategiaAlarme<|--AlarmePressao
+    
+    %% Relacionamentos
     Sensor --> GeradorAleatorio : usa
+    SensorRadiacao --> IVaretasState : monitora
+    EstrategiaControle --> Sensor : lê
     EstrategiaControle --> Atuador : controla
-    Sensor --> Json : exporta
-    Json --> Atuador : exporta
+    EstrategiaAlarme --> Sensor : verifica
+    JsonExporter --> Sensor : exporta
+    JsonExporter --> EstrategiaAlarme : exporta
+    BombaAgua --> JsonExporter : exporta
+    Varetas --> JsonExporter : exporta
 
-
-
-
-    class Atuador{
-        #string tag
-        #bool ligado
-        +void ligar()
-        +void desligar()
-        +bool isLigado()
-        +virtual ~Atuador()
-
-    }   
-
+    %% Classes Base
     class Sensor{
-        -string Tag
-        -string UnidadeMedida
-        -string Timestamp
-        -string Status
-        -GeradorAleatorio gerador
-        -int ValorMax;
-        -int ValorMin;
+        #string Tag
+        #string UnidadeMedida
+        #string Timestamp
+        #string Status
+        #GeradorAleatorio gerador
+        #int ValorMax
+        #int ValorMin
         -void atualizarTimestamp()
-        +void ler()
-        +virtual int getValorAtual()
-        +string getTag() 
+        +void ler()*
+        +int getValorAtual()*
+        +string getTag()
         +string getUnidadeMedida()
         +string getTimestamp()
         +string getStatus()
-        +void setStatus()
+        +void setStatus(string)
         +void calibrar()
     }
 
+    class Atuador{
+        #string Tag
+        #bool ligado
+        +void ligar()*
+        +void desligar()*
+        +bool isLigado()*
+        +string getTag()
+    }
+
+    class EstrategiaControle{
+        #float LimiteMin
+        #float LimiteMax
+        +void aplicar(Sensor*, Atuador*)*
+    }
+
+    class EstrategiaAlarme{
+        #int LimiteMin
+        #int LimiteMax
+        #string Tag
+        #string StatusAlarme
+        #string Timestamp
+        -void atualizarTimestamp()
+        +void verificar(Sensor*)*
+        +string getTag()
+        +string getStatusAlarme()
+        +string getTimestamp()
+    }
+
+    %% Interfaces
+    class IVaretasState{
+        <<interface>>
+        +bool isLigado()*
+    }
+
+    %% Especializações de Sensores
     class SensorNivel{
         -int AlturaAtual
         -float RaioTanque
         -float VolumeTotalMax
         +void ler()
         +int getValorAtual()
-        +void CalcularVolume()
-
+        +void CalcularVolume(int, float)
     }
+
     class SensorRadiacao{
         -int NivelRadiacaoAtual
         -float DoseAcumulada
         -float LimiteDoseAcumulada
+        -IVaretasState* varetasState
         -bool varetasRetiradas
         +void ler()
         +int getValorAtual()
-        +void AcumularDose()
+        +void AcumularDose(int, string)
         +float getDoseAcumulada()
-    }
-    class SensorVazao{
-        -int VazaoAtual;
-        -float VazaoAcumulada;
-        +void ler()
-        +int getValorAtual()
-        +void AcumularVazao()
     }
 
     class SensorTemp{
-        -int TempKelvin;
-        -float TempCelsius;
+        -int TempKelvin
+        -float TempCelsius
         +void ler()
         +int getValorAtual()
-        +void ConverterKelvinCelsius()
+        +void ConverterKelvinCelsius(int)
     }
 
-  
+    class SensorPressao{
+        -int PressaoAtual
+        +void ler()
+        +int getValorAtual()
+    }
 
-    class BombaAgua{ 
+    %% Especializações de Atuadores
+    class BombaAgua{
         -float Potencia
-        +void setPotencia()
         +void ligar()
         +void desligar()
-        +float getPotencia
-
+        +void setPotencia(float)
+        +float getPotencia()
     }
 
     class Varetas{
         -float ValorAtual
-        +void AjustarQueima() 
         +void ligar()
         +void desligar()
         +bool isLigado()
+        +void AjustarQueima(float)
         +float getValorAtual()
     }
 
+    %% Especializações de Estratégia de Controle
+    class ControleNivel{
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControleTemperatura{
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControlePressao{
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControleBombaManual{
+        -AcaoBomba Acao
+        +void setAcao(AcaoBomba)
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControleBombaAutomatico{
+        -ControleNivel& ControleNivelDependencia
+        -ControleTemperatura& ControleTemperaturaDependencia
+        -ControlePressao& ControlePressaoDependencia
+        -SensorNivel* SensorNivelDependencia
+        -SensorTemp* SensorTempDependencia
+        -SensorPressao* SensorPressaoDependencia
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControleQueima{
+        -float DoseAcumuladaMin
+        -float DoseAcumuladaMax
+        -float TempMax
+        -SensorTemp* sTempDependencia
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class EstrategiaManual{
+        -AcaoBomba AcaoBombaAtual
+        -float PotenciaBomba
+        -AcaoVaretas acaoVaretas
+        +void setAcaoBomba(AcaoBomba)
+        +void setPotenciaBomba(float)
+        +void setAcaoVaretas(AcaoVaretas)
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class EstrategiaAutomatica{
+        -ControleBombaAutomatico& CtrlBombaAuto
+        -ControleQueima& CtrlQueimaDep
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    %% Especializações de Alarmes
+    class AlarmeTemperatura{
+        +void verificar(Sensor*)
+    }
+
+    class AlarmeNivel{
+        +void verificar(Sensor*)
+    }
+
+    class AlarmeRadiacao{
+        +void verificar(Sensor*)
+    }
+
+    class AlarmePressao{
+        +void verificar(Sensor*)
+    }
+
+    %% Classes Utilitárias
     class GeradorAleatorio{
-        +GeradorAleatorio()
-
-    }
-    
-    class EstrategiaControle{
-        #float LimiteMin
-        #float LimiteMax
-        +void aplicar()
-
+        +int gerar(int min, int max)
     }
 
-    class Json{
-        +string gerarJsonLeitura
-        +string gerarJsonAlarme
-        +string gerarJsonAtuadorBomba
-        +string gerarJsonAtuadorVaretas
+    class JsonExporter{
+        +string gerarJsonLeitura(Sensor&)$
+        +string gerarJsonAlarme(EstrategiaAlarme&)$
+        +string gerarJsonAtuadorBomba(BombaAgua&, string)$
+        +string gerarJsonAtuadorVaretas(Varetas&, string)$
+    }
+
+    %% Enumerações
+    class AcaoBomba{
+        <<enumeration>>
+        AUTOMATICO
+        LIGAR
+        DESLIGAR
+    }
+
+    class AcaoVaretas{
+        <<enumeration>>
+        AUTOMATICO
+        INSERIR
+        RETIRAR
     }
 ```
 
@@ -208,7 +342,7 @@ classDiagram
 
 
 ### assinatura operacional da dupla
-> a
+> Nosso ID da dupla é 03, com isso nos nomeamos todos os sensores para -03, e a falha critica acontece quando a dose de radiação chega em 300
 
 ### divisão de responsabilidades
 
@@ -218,6 +352,9 @@ classDiagram
 
 ### decisões de padrões de projeto
 > Strategy: Isolamento das regras de controle, permitindo que a lógica de automação mude dinamicamente ou receba novas regras sem modificar a classe principal da estação 
+
+> Observer:é um design pattern comportamental onde um objeto (o observável/sujeito) mantém uma lista de dependentes (observadores) e os notifica automaticamente sobre qualquer alteração de estado
+
 ### limitações conhecidas
 - Nosso codigo roda de forma bem imediata, do tipo: 
 - leitura(sensores) -> estrategia de controle -> ação(atuadores)

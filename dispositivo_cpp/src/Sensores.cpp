@@ -85,7 +85,7 @@ void SensorRadiacao::ler() {
     
 
     if (Reator::getInstance().isExplodido()) {
-        NivelRadiacaoAtual = gerador.decimal(10000, 90000);
+        NivelRadiacaoAtual = gerador.decimal(1000, 9000);
        
     }
 
@@ -133,7 +133,7 @@ void SensorTemp::ler() {
     
 
     if (Reator::getInstance().isExplodido()) {
-        TempKelvin = gerador.decimal(10000, 90000);   
+        TempKelvin = gerador.decimal(1000, 5000);   
     }
 
     atualizarTimestamp();
