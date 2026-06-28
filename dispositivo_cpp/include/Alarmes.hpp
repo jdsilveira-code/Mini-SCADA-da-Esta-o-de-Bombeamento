@@ -41,9 +41,9 @@ class AlarmeRadiacao : public EstrategiaAlarme {
         void verificar(Sensor* sensor) override;
 };
 
-class AlarmeVazao : public EstrategiaAlarme {
+class AlarmePressao : public EstrategiaAlarme {
     public:
-        AlarmeVazao(int limiteMinimo, int limiteMaximo, const std::string& tag);
+        AlarmePressao(int limiteMinimo, int limiteMaximo, const std::string& tag);
         void verificar(Sensor* sensor) override;
 };
 

@@ -315,7 +315,6 @@ else:
     colunas_atuadores = [
         "tag",
         "timestamp",
-        "status",
         "valor",
         "_linha"
     ]
@@ -391,7 +390,6 @@ else:
         "unidade",
         "timestamp",
         "status",
-        "status_validado",
     ]
 
     colunas_existentes_consulta = [
@@ -425,6 +423,29 @@ with col_cmd3:
     if st.button("Retirar manualmente", use_container_width=True):
         registrar_comando("VAR-01", "RETIRAR")
         st.success("Comando enviado: retirar varetas manualmente")
+
+
+# ========== NOVA SEÇÃO: Comandos da bomba ==========
+st.subheader("Comandos da bomba")
+
+col_bomba1, col_bomba2, col_bomba3 = st.columns(3)
+
+with col_bomba1:
+    if st.button("Automático", use_container_width=True):
+        registrar_comando("BAG-01", "AUTOMATICO")
+        st.success("Comando enviado: controle automatico da bomba")
+
+with col_bomba2:
+    if st.button("Ligar bomba", use_container_width=True):
+        registrar_comando("BAG-01", "LIGAR")
+        st.success("Comando enviado: ligar bomba manualmente")
+
+with col_bomba3:
+    if st.button("Desligar bomba", use_container_width=True):
+        registrar_comando("BAG-01", "DESLIGAR")
+        st.success("Comando enviado: desligar bomba manualmente")
+# ==================================================
+
 
 ultimo_comando = st.session_state.get("ultimo_comando")
 

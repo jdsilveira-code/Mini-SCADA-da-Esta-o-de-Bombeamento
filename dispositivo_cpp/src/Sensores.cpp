@@ -134,24 +134,19 @@ void SensorTemp::ConverterKelvinCelsius(int tempKelvin) {
     atualizarTimestamp();
 }
 
-SensorVazao::SensorVazao(std::string tag, int max, int min) {
+SensorPressao::SensorPressao(std::string tag, int max, int min) {
     Tag = tag;
     ValorMax = max;
     ValorMin = min;
-    UnidadeMedida = "m3/h";
-    VazaoAcumulada = 0.0f;
+    UnidadeMedida = "Psi";
 }
 
-void SensorVazao::ler() {
-    VazaoAtual = gerador.decimal(ValorMin, ValorMax);
+void SensorPressao::ler() {
+    PressaoAtual = gerador.decimal(ValorMin, ValorMax);
     atualizarTimestamp();
 }
 
-int SensorVazao::getValorAtual() const {
-    return VazaoAtual;
+int SensorPressao::getValorAtual() const {
+    return PressaoAtual;
 }
 
-void SensorVazao::AcumularVazao(int vazao, std::string timestamp) {
-    VazaoAcumulada += vazao;
-    Timestamp = timestamp;
-}

@@ -73,19 +73,19 @@ void AlarmeRadiacao::verificar(Sensor* sensor) {
     }
 }
 
-AlarmeVazao::AlarmeVazao(int limiteMinimo, int limiteMaximo, const std::string& tag)
+AlarmePressao::AlarmePressao(int limiteMinimo, int limiteMaximo, const std::string& tag)
     : EstrategiaAlarme(limiteMinimo, limiteMaximo, tag) {}
 
-void AlarmeVazao::verificar(Sensor* sensor) {
+void AlarmePressao::verificar(Sensor* sensor) {
     if (sensor == nullptr) {
         return;
     }
     atualizarTimestamp();
     int valor = sensor->getValorAtual();
     if (valor < LimiteMin) {
-        StatusAlarme = "ALERTA - VAZAO BAIXA";
+        StatusAlarme = "ALERTA - PRESSAO BAIXA";
     } else if (valor > LimiteMax) {
-        StatusAlarme = "ALERTA - VAZAO ALTA";
+        StatusAlarme = "ALERTA - PRESSAO ALTA";
     } else {
         StatusAlarme = "Normal";
     }
