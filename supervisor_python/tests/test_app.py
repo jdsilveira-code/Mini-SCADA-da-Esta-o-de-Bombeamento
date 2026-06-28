@@ -112,3 +112,34 @@ def test_extracao_dose_acumulada():
             dose_acumulada = rad_df.iloc[-1]["dose_acumulada"]
 
     assert dose_acumulada == 160.2
+
+    # TESTE: db_writer - observer EventBus
+def test_event_bus_notifica_subscribers():
+    eventos = []
+
+    def callback(evento):
+        eventos.append(evento)
+
+    bus = db_writer.EventBus()
+    bus.subscribe(callback)
+    bus.publish({"tipo": "persistencia", "tabela": "leituras", "quantidade": 1})
+
+    assert eventos == [{"tipo": "persistencia", "tabela": "leituras", "quantidade": 1}]
+
+# TESTE: extração de dose_acumulada do DataFrame
+def test_extracao_dose_acumulada():
+    dados = [
+        {"tag": "SRD-03", "valor": 30, "dose_acumulada": 150.5},
+        {"tag": "SNV-03", "valor": 50},
+        {"tag": "SRD-03", "valor": 25, "dose_acumulada": 160.2},
+    ]
+    df = pd.DataFrame(dados)
+
+    # Simula a lógica de extração do app.py
+    dose_acumulada = None
+    if not df.empty and "dose_acumulada" in df.columns:
+        rad_df = df[df["tag"] == "SRD-03"].dropna(subset=["dose_acumulada"])
+        if not rad_df.empty:
+            dose_acumulada = rad_df.iloc[-1]["dose_acumulada"]
+
+    assert dose_acumulada == 160.2

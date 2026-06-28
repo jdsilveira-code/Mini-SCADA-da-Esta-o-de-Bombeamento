@@ -12,9 +12,10 @@ backgroundColor = "#000000"
 
 # Cor de fundo de elementos secundários (sidebar, cards, containers)
 secondaryBackgroundColor = "#0b0f0c"
-
+    
 # Cor do texto principal
 textColor = "#00ff0d"
+
 
 # Fonte (geralmente mantenha "sans serif" ou troque por "serif" se quiser)
 font = "sans serif"

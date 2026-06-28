@@ -31,7 +31,7 @@ def carregar_jsonl(caminho):
     if not caminho.exists():
         return pd.DataFrame()
 
-    with open(caminho, "r", encoding="utf-8") as arquivo:
+    with open(caminho, "r", encoding="utf-8", erros="replace") as arquivo:
         for numero_linha, linha in enumerate(arquivo, start=1):
             linha = linha.strip()
             if not linha:
@@ -71,7 +71,7 @@ def ativar_atualizacao_automatica():
             "Instale streamlit-autorefresh para atualizar sem recarregar a pagina."
         )
         return
-    st_autorefresh(
+    contador = st_autorefresh(
         interval=intervalo_s * 1000,
         key="atualizacao_automatica",
     )
