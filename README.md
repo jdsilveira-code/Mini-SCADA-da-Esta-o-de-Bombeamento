@@ -37,103 +37,187 @@ A tabela abaixo define os intervalos operacionais e os limites para disparo de a
 
 ```mermaid
 classDiagram
-    
+    %% Hierarquia de Sensores
     Sensor<|--SensorTemp
     Sensor<|--SensorRadiacao
     Sensor<|--SensorNivel
-    Sensor<|--SensorVazao
+    Sensor<|--SensorPressao
+    
+    %% Hierarquia de Atuadores
     Atuador<|--BombaAgua
     Atuador<|--Varetas
+    IVaretasState<|..Varetas
+    
+    %% Hierarquia de Estratégias de Controle
+    EstrategiaControle<|--ControleNivel
+    EstrategiaControle<|--ControleTemperatura
+    EstrategiaControle<|--ControlePressao
+    
+    %% Hierarquia de Alarmes
+    EstrategiaAlarme<|--AlarmeTemperatura
+    EstrategiaAlarme<|--AlarmeNivel
+    EstrategiaAlarme<|--AlarmeRadiacao
+    EstrategiaAlarme<|--AlarmePressao
+    
+    %% Relacionamentos
     Sensor --> GeradorAleatorio : usa
+    SensorRadiacao --> IVaretasState : monitora
+    EstrategiaControle --> Sensor : lê
     EstrategiaControle --> Atuador : controla
-    Sensor --> Json : exporta
-    Json --> Atuador : exporta
+    EstrategiaAlarme --> Sensor : verifica
+    JsonExporter --> Sensor : exporta
+    JsonExporter --> EstrategiaAlarme : exporta
+    JsonExporter --> BombaAgua : exporta
+    JsonExporter --> Varetas : exporta
 
-
-
-
-    class Atuador{
-        #string tag
-        #bool ligado
-        +void ligar()
-        +void desligar()
-        +bool isLigado()
-        +virtual ~Atuador()
-
-    }   
-
+    %% Classes Base
     class Sensor{
-        -string Tag
-        -string UnidadeMedida
-        -string Timestamp
-        -string Status
-        -GeradorAleatorio gerador
-        -int ValorMax;
-        -int ValorMin;
+        #string Tag
+        #string UnidadeMedida
+        #string Timestamp
+        #string Status
+        #GeradorAleatorio gerador
+        #int ValorMax
+        #int ValorMin
         -void atualizarTimestamp()
-        +void ler()
-        +virtual int getValorAtual()
-        +string getTag() 
+        +void ler()*
+        +int getValorAtual()*
+        +string getTag()
         +string getUnidadeMedida()
         +string getTimestamp()
         +string getStatus()
-        +void setStatus()
+        +void setStatus(string)
         +void calibrar()
     }
 
+    class Atuador{
+        #string Tag
+        #bool ligado
+        +void ligar()*
+        +void desligar()*
+        +bool isLigado()*
+        +string getTag()
+    }
+
+    class EstrategiaControle{
+        #float LimiteMin
+        #float LimiteMax
+        +void aplicar(Sensor*, Atuador*)*
+    }
+
+    class EstrategiaAlarme{
+        #int LimiteMin
+        #int LimiteMax
+        #string Tag
+        #string StatusAlarme
+        #string Timestamp
+        -void atualizarTimestamp()
+        +void verificar(Sensor*)*
+        +string getTag()
+        +string getStatusAlarme()
+        +string getTimestamp()
+    }
+
+    %% Interfaces
+    class IVaretasState{
+        <<interface>>
+        +bool isLigado()*
+    }
+
+    %% Especializações de Sensores
     class SensorNivel{
         -int AlturaAtual
         -float RaioTanque
         -float VolumeTotalMax
         +void ler()
         +int getValorAtual()
-        +void CalcularVolume()
-
+        +void CalcularVolume(int, float)
     }
+
     class SensorRadiacao{
         -int NivelRadiacaoAtual
         -float DoseAcumulada
         -float LimiteDoseAcumulada
+        -IVaretasState* varetasState
         -bool varetasRetiradas
         +void ler()
         +int getValorAtual()
-        +void AcumularDose()
+        +void AcumularDose(int, string)
         +float getDoseAcumulada()
-    }
-    class SensorVazao{
-        -int VazaoAtual;
-        -float VazaoAcumulada;
-        +void ler()
-        +int getValorAtual()
-        +void AcumularVazao()
     }
 
     class SensorTemp{
-        -int TempKelvin;
-        -float TempCelsius;
+        -int TempKelvin
+        -float TempCelsius
         +void ler()
         +int getValorAtual()
-        +void ConverterKelvinCelsius()
+        +void ConverterKelvinCelsius(int)
     }
 
-  
+    class SensorPressao{
+        -int PressaoAtual
+        +void ler()
+        +int getValorAtual()
+    }
 
-    class BombaAgua{ 
+    %% Especializações de Atuadores
+    class BombaAgua{
         -float Potencia
-        +void setPotencia()
         +void ligar()
         +void desligar()
-        +float getPotencia
-
+        +void setPotencia(float)
+        +float getPotencia()
     }
 
     class Varetas{
         -float ValorAtual
-        +void AjustarQueima() 
         +void ligar()
         +void desligar()
         +bool isLigado()
+        +void AjustarQueima(float)
         +float getValorAtual()
+    }
+
+    %% Especializações de Estratégia de Controle
+    class ControleNivel{
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControleTemperatura{
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    class ControlePressao{
+        +void aplicar(Sensor*, Atuador*)
+    }
+
+    %% Especializações de Alarmes
+    class AlarmeTemperatura{
+        +void verificar(Sensor*)
+    }
+
+    class AlarmeNivel{
+        +void verificar(Sensor*)
+    }
+
+    class AlarmeRadiacao{
+        +void verificar(Sensor*)
+    }
+
+    class AlarmePressao{
+        +void verificar(Sensor*)
+    }
+
+    %% Classes Utilitárias
+    class GeradorAleatorio{
+        +int gerar(int min, int max)
+    }
+
+    class JsonExporter{
+        +string gerarJsonLeitura(Sensor&)$
+        +string gerarJsonAlarme(EstrategiaAlarme&)$
+        +string gerarJsonAtuadorBomba(BombaAgua&, string)$
+        +string gerarJsonAtuadorVaretas(Varetas&, string)$
     }
 
     class GeradorAleatorio{
