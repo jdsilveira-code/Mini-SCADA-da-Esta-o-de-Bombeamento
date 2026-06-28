@@ -1,14 +1,14 @@
 # Reator - Estação de Bombeamente
 
-> Nesse projeto nossa ideia é monitor e controlar um tanque de água que faz parte de um reator de uma usina nuclear, com base nas leituras dos sensores, os atuadores como bomba e varetas atuam para manter o reator funcial e inteiro
+> Nesse projeto nossa ideia é monitorar e controlar um tanque de água que faz parte de um reator de uma usina nuclear, com base nas leituras dos sensores, os atuadores como bomba e varetas atuam para manter o reator funcial e inteiro
 
- - **Dispositivo C++:** Simula a leitura de sensores (nível, temperatura, radiação, vazão) e atuadores (varetas e bomba), gerando arquivos JSON Lines (`readings.jl` e `commands.jl`).
-- **Backend Python (`db_writer.py`):** Monitora os arquivos gerados pelo C++ e persiste os dados em CSV e SQLite.
+ - **Dispositivo C++:** Simula a leitura de sensores (nível, temperatura, radiação, pressão) e atuadores (varetas e bomba), gerando arquivos JSON (`readings.jl` e `commands.jl`).
+- **Backend Python (`db_writer.py`):** Monitora os arquivos gerados pelo C++ e persiste os dados em SQLite.
 - **Frontend Streamlit (`app.py`):** Exibe um dashboard interativo com métricas, gráficos históricos, tabelas de alarmes e painel de controle para envio de comandos.
 
 ### 1. Camada de Dados e Aquisição (Backend)
 - **Componentes:** Simulador C++ e `db_writer.py`.
-- **Responsabilidade:** Capturar os dados brutos dos sensores (C++), armazená-los em arquivos `.jl` e, em seguida, consolidá-los em um banco de dados relacional (SQLite) e CSVs via Python.
+- **Responsabilidade:** Capturar os dados brutos dos sensores (C++), armazená-los em arquivos `.jl` e, em seguida, consolidá-los em um banco de dados relacional (SQLite) via Python.
 - **Tecnologias:** C++, Python, SQLite.
 
 ### 2. Camada de Apresentação (Frontend)
@@ -30,7 +30,7 @@ A tabela abaixo define os intervalos operacionais e os limites para disparo de a
 | Nível | m | 0 / 100 | < 30 | > 99 |
 | Temperatura | K | 250 / 400 | < 300 | > 350 |
 | Radiação | mSv/h | 0 / 50 | < 10 | > 40 |
-| Vazão | m³/h | 0 / 200 | < 10 | > 180 |
+| Pressao | psi | 0 / 200 | < 10 | > 180 |
 
 
 ---
@@ -351,11 +351,10 @@ classDiagram
 >Leandro: Responsavel pelo supervisorio e os banco de dados
 
 ### decisões de padrões de projeto
-> Strategy: Isolamento das regras de controle, permitindo que a lógica de automação mude dinamicamente ou receba novas regras sem modificar a classe principal da estação 
-
-> Observer:é um design pattern comportamental onde um objeto (o observável/sujeito) mantém uma lista de dependentes (observadores) e os notifica automaticamente sobre qualquer alteração de estado
+> Strategy e Observer.
 
 ### limitações conhecidas
 - Nosso codigo roda de forma bem imediata, do tipo: 
 - leitura(sensores) -> estrategia de controle -> ação(atuadores)
 - e fica nesse ciclo infinito, onde a leitura anterior não exatamente interfere na proxima leitura,por conta de todas as leituras serem geradas aleatoriamente, exeto a dose de radiação que vai acumulando ou dissipando com o tempo.
+  
