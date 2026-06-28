@@ -161,3 +161,39 @@ int main() {
     std::cout << "Todos os testes C++ passaram." << std::endl;
     return 0;
 }
+
+    // TESTE: ControlePressao
+    {
+        SensorPressao sensorPressao("SPR-03", 200, 0);
+        BombaAgua bomba("BOMBA-03");
+        ControlePressao estrategia(0.0f, 180.0f);
+
+        // Pressão normal (100) -> potência não deve ser reduzida (mantém 100%)
+        bomba.setPotencia(100.0f);
+        bomba.ligar();
+        sensorPressao.ler(); // mock? Não, SensorPressao real gera aleatório.
+        // Como não temos mock para SensorPressao, vamos usar um truque:
+        // Criamos um mock simples local para testar.
+        // Mas para simplificar, vou usar um SensorPressao real com valor forçado.
+        // Vou criar uma classe mock inline.
+        class SensorPressaoMock : public SensorPressao {
+        public:
+            SensorPressaoMock(std::string tag, int max, int min, int valorForcado)
+                : SensorPressao(tag, max, min), valorForcado(valorForcado) {}
+            void ler() override {}
+            int getValorAtual() const override { return valorForcado; }
+            void setValor(int v) { valorForcado = v; }
+        private:
+            int valorForcado;
+        };
+
+        SensorPressaoMock mockPressao("SPR-03", 200, 0, 100);
+        estrategia.aplicar(&mockPressao, &bomba);
+        assert(bomba.getPotencia() == 100.0f); // deve manter
+
+        // Pressão alta (190) -> deve reduzir a potência
+        mockPressao.setValor(190);
+        estrategia.aplicar(&mockPressao, &bomba);
+        assert(bomba.getPotencia() < 100.0f); // reduziu
+        assert(bomba.getPotencia() >= 0.0f);
+    }
