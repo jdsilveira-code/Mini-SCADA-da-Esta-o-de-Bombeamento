@@ -1,2 +1,11 @@
-{"tipo": "comando", "tag": "BAG-01", "acao": "LIGAR", "origem": "supervisor", "timestamp": "2026-06-28T02:57:53.150137+00:00"}
-{"tipo": "comando", "tag": "BAG-01", "acao": "AUTOMATICO", "origem": "supervisor", "timestamp": "2026-06-28T02:58:16.843058+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "AUTOMATICO", "origem": "supervisor", "timestamp": "2026-06-28T15:31:47.050446+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "INSERIR", "origem": "supervisor", "timestamp": "2026-06-28T15:31:47.893563+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "RETIRAR", "origem": "supervisor", "timestamp": "2026-06-28T15:31:48.575163+00:00"}
+{"tipo": "comando", "tag": "BAG-03", "acao": "LIGAR", "origem": "supervisor", "timestamp": "2026-06-28T15:31:50.710229+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "RETIRAR", "origem": "supervisor", "timestamp": "2026-06-28T15:31:52.476012+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "INSERIR", "origem": "supervisor", "timestamp": "2026-06-28T15:31:53.309407+00:00"}
+{"tipo": "comando", "tag": "BAG-03", "acao": "LIGAR", "origem": "supervisor", "timestamp": "2026-06-28T15:31:54.466456+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "AUTOMATICO", "origem": "supervisor", "timestamp": "2026-06-28T15:31:55.365206+00:00"}
+{"tipo": "comando", "tag": "BAG-03", "acao": "AUTOMATICO", "origem": "supervisor", "timestamp": "2026-06-28T15:31:56.731841+00:00"}
+{"tipo": "comando", "tag": "VAR-03", "acao": "AUTOMATICO", "origem": "supervisor", "timestamp": "2026-06-28T15:31:58.312337+00:00"}
+{"tipo": "comando", "tag": "BAG-03", "acao": "AUTOMATICO", "origem": "supervisor", "timestamp": "2026-06-28T15:32:00.626138+00:00"}

@@ -3,6 +3,7 @@
 
 #include <string>
 
+// Forward declarations
 class Sensor;
 class EstrategiaAlarme;
 class BombaAgua;
@@ -14,6 +15,7 @@ public:
     static std::string gerarJsonAlarme(EstrategiaAlarme& alarme);
     static std::string gerarJsonAtuadorBomba(BombaAgua& bomba, const std::string& timestamp);
     static std::string gerarJsonAtuadorVaretas(Varetas& varetas, const std::string& timestamp);
+    static std::string gerarJsonFalha(const std::string& mensagem, float doseAcumulada, const std::string& timestamp);
 };
 
-#endif // JSON_EXPORTER_HPP
+#endif

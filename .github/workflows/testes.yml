@@ -18,14 +18,15 @@ jobs:
         run: |
           mkdir -p build
           g++ -std=c++17 -Wall -Wextra -pedantic -Iinclude \
-            src/Alarmes.cpp \
-            src/Atuadores.cpp \
-            src/EstrategiaControle.cpp \
-            src/GeradorNumeros.cpp \
-            src/JsonExporter.cpp \
-            src/Sensores.cpp \
-            tests/test_controle.cpp \
-            -o build/test_controle
+          src/Alarmes.cpp \
+          src/Atuadores.cpp \
+          src/EstrategiaControle.cpp \
+          src/GeradorNumeros.cpp \
+          src/JsonExporter.cpp \
+          src/Sensores.cpp \
+          src/EstadoReator.cpp \
+          tests/test_controle.cpp \
+          -o build/test_controle
 
       - name: Executar testes C++
         working-directory: dispositivo_cpp

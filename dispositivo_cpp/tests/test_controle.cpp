@@ -6,6 +6,7 @@
 #include "EstrategiaControle.hpp"
 #include "Sensores.hpp"
 #include "Atuadores.hpp"
+#include "EstadoReator.hpp"
 
 // MOCK para SensorNivel
 class SensorNivelMock : public SensorNivel {
@@ -105,6 +106,23 @@ int main() {
         assert(std::abs(varetas.getValorAtual() - 0.0f) < 0.1f);
     }
 
+    {
+    SensorRadiacaoMock sensorRad("SRD-03", 50, 0, nullptr, 30, 200.0f);
+    Varetas varetas("VAR-03");
+    ControleQueima estrategia(50.0f, 150.0f);
+
+    // Força explosão
+    Reator::getInstance().setEstado(EstadoReator::EXPLODIDO);
+
+    // Ajusta varetas para 0 e aplica controle – não deve alterar
+    varetas.AjustarQueima(0.0f);
+    estrategia.aplicar(&sensorRad, &varetas);
+    assert(std::abs(varetas.getValorAtual() - 0.0f) < 0.1f); // deve permanecer 0
+
+    // Reseta para normal
+    Reator::getInstance().setEstado(EstadoReator::NORMAL);
+}
+
     // TESTE: ControleQueima - construtor completo com SensorTemp
     {
         SensorTempMock sensorTemp("STM-02", 600, 300, 400);
@@ -142,4 +160,42 @@ int main() {
 
     std::cout << "Todos os testes C++ passaram." << std::endl;
     return 0;
+
+    // TESTE: ControlePressao
+    {
+        SensorPressao sensorPressao("SPR-03", 200, 0);
+        BombaAgua bomba("BOMBA-03");
+        ControlePressao estrategia(0.0f, 180.0f);
+
+        // Pressão normal (100) -> potência não deve ser reduzida (mantém 100%)
+        bomba.setPotencia(100.0f);
+        bomba.ligar();
+        sensorPressao.ler(); // mock? Não, SensorPressao real gera aleatório.
+        // Como não temos mock para SensorPressao, vamos usar um truque:
+        // Criamos um mock simples local para testar.
+        // Mas para simplificar, vou usar um SensorPressao real com valor forçado.
+        // Vou criar uma classe mock inline.
+        class SensorPressaoMock : public SensorPressao {
+        public:
+            SensorPressaoMock(std::string tag, int max, int min, int valorForcado)
+                : SensorPressao(tag, max, min), valorForcado(valorForcado) {}
+            void ler() override {}
+            int getValorAtual() const override { return valorForcado; }
+            void setValor(int v) { valorForcado = v; }
+        private:
+            int valorForcado;
+        };
+
+        SensorPressaoMock mockPressao("SPR-03", 200, 0, 100);
+        estrategia.aplicar(&mockPressao, &bomba);
+        assert(bomba.getPotencia() == 100.0f); // deve manter
+
+        // Pressão alta (190) -> deve reduzir a potência
+        mockPressao.setValor(190);
+        estrategia.aplicar(&mockPressao, &bomba);
+        assert(bomba.getPotencia() < 100.0f); // reduziu
+        assert(bomba.getPotencia() >= 0.0f);
+    }
 }
+
+    

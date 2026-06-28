@@ -1,6 +1,9 @@
 #include "EstrategiaControle.hpp"
+#include "EstadoReator.hpp"
 #include <algorithm>
 #include <string>
+#include <iostream>   // Adicionado para std::cout
+#include <ostream>    // Adicionado para std::endl
 
 namespace {
     template <typename T>
@@ -99,10 +102,14 @@ void ControleBombaManual::aplicar(Sensor* /*sensor*/, Atuador* atuador) {
         return;
     }
 
+    
+
     if (Acao == AcaoBomba::LIGAR) {
         bomba->ligar();
+        
     } else if (Acao == AcaoBomba::DESLIGAR) {
         bomba->desligar();
+        
     }
 }
 
@@ -153,6 +160,10 @@ void ControleQueima::aplicar(Sensor* sensor, Atuador* atuador) {
         return;
     }
 
+    if (Reator::getInstance().isExplodido()) {
+        return;
+    }
+
     const float doseAcumulada = sensorRadiacao->getDoseAcumulada();
     if (doseAcumulada >= DoseAcumuladaMax) {
         varetas->AjustarQueima(100.0f);
@@ -172,8 +183,7 @@ EstrategiaManual::EstrategiaManual()
     : EstrategiaControle(0.0f),
       AcaoBombaAtual(AcaoBomba::AUTOMATICO),
       PotenciaBomba(0.0f),
-      acaoVaretas(AcaoVaretas::AUTOMATICO)   
-{}
+      acaoVaretas(AcaoVaretas::AUTOMATICO) {}
 
 void EstrategiaManual::setAcaoBomba(AcaoBomba a) {
     AcaoBombaAtual = a;
@@ -184,7 +194,7 @@ void EstrategiaManual::setPotenciaBomba(float p) {
 }
 
 void EstrategiaManual::setAcaoVaretas(AcaoVaretas a) {
-    acaoVaretas = a;   
+    acaoVaretas = a;
 }
 
 void EstrategiaManual::aplicar(Sensor* /*sensor*/, Atuador* atuador) {
@@ -203,7 +213,6 @@ void EstrategiaManual::aplicar(Sensor* /*sensor*/, Atuador* atuador) {
 
     Varetas* varetas = dynamic_cast<Varetas*>(atuador);
     if (varetas) {
-        // Agora usando o membro com nome correto
         if (acaoVaretas == AcaoVaretas::INSERIR) {
             varetas->AjustarQueima(100.0f);
         } else if (acaoVaretas == AcaoVaretas::RETIRAR) {
