@@ -195,7 +195,7 @@ classDiagram
 - python3 -m venv .venv
 - source .venv/bin/activate
 - pip instal -r requirements.txt
-- streamlit run supervisor_python/app.python `abra o link gerado`
+- streamlit run supervisor_python/app.py `abra o link gerado`
 
 ### instruções para executar o Banco de Dados
 >Passo a passo para rodar o Banco de Dados
