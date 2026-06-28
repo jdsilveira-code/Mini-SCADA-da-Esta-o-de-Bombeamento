@@ -1,282 +1,144 @@
+# TESTES PARA O SUPERVISOR PYTHON
 import json
-from datetime import datetime, timezone
-from pathlib import Path
-
+import pytest
+import tempfile
 import pandas as pd
-import streamlit as st
+from pathlib import Path
+import sys
+import os
 
-try:
-    from streamlit_autorefresh import st_autorefresh
-except ImportError:
-    st_autorefresh = None
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import app
+import db_writer
 
-st.set_page_config(
-    page_title="REATOR - Supervisor",
-    layout="wide"
-)
+# TESTE: carregar_jsonl com arquivo válido
+def test_carregar_jsonl_valido():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.jl', delete=False) as f:
+        f.write('{"timestamp":"2024-01-01","tag":"SNV-01","valor":10,"unidade":"%","status":"OPERACIONAL"}\n')
+        f.write('{"timestamp":"2024-01-02","tag":"STM-01","valor":300,"unidade":"K","status":"OPERACIONAL"}\n')
+        caminho = Path(f.name)
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-ARQUIVO_COMANDOS = BASE_DIR / "output" / "commands.jl"
-INTERVALO_ATUALIZACAO_PADRAO_S = 2
+    df = app.carregar_jsonl(caminho)
+    assert len(df) == 2
+    assert "timestamp" in df.columns
+    assert df.iloc[0]["tag"] == "SNV-01"
+    os.unlink(caminho)
 
-LIMITES_SENSORES = {
-    "SNV-03": {"nome": "Nivel", "min": 0, "max": 100},
-    "STM-03": {"nome": "Temperatura", "min": 250, "max": 400},
-    "SRD-03": {"nome": "Radiacao", "min": 0, "max": 50},
-    "SPR-03": {"nome": "Pressao", "min": 0, "max": 200},
-}
+# TESTE: carregar_jsonl com arquivo vazio
+def test_carregar_jsonl_vazio():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.jl', delete=False) as f:
+        pass
+    caminho = Path(f.name)
+    df = app.carregar_jsonl(caminho)
+    assert df.empty
+    os.unlink(caminho)
 
-def carregar_jsonl(caminho):
-    registros = []
-    if not caminho.exists():
-        return pd.DataFrame()
+# TESTE: carregar_jsonl com linha inválida (JSON malformado)
+def test_carregar_jsonl_invalido():
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.jl', delete=False) as f:
+        f.write('{"tag":"OK"}\n')
+        f.write('linha inválida sem JSON\n')
+        f.write('{"tag":"DEPOIS"}\n')
+        caminho = Path(f.name)
 
-    with open(caminho, "r", encoding="utf-8", erros="replace") as arquivo:
-        for numero_linha, linha in enumerate(arquivo, start=1):
-            linha = linha.strip()
-            if not linha:
-                continue
-            try:
-                item = json.loads(linha)
-                item["_linha"] = numero_linha
-                registros.append(item)
-            except json.JSONDecodeError:
-                registros.append({
-                    "tipo": "falha",
-                    "tag": "JSON",
-                    "status": "INVALIDO",
-                    "mensagem": linha,
-                    "_linha": numero_linha,
-                })
-    return pd.DataFrame(registros)
+    df = app.carregar_jsonl(caminho)
+    assert len(df) == 3
+    assert df.iloc[1]["tipo"] == "falha"
+    os.unlink(caminho)
 
-def ativar_atualizacao_automatica():
-    st.sidebar.subheader("Atualizacao")
-    atualizar = st.sidebar.toggle("Atualizar automaticamente", value=True)
-    intervalo_s = st.sidebar.slider(
-        "Intervalo",
-        min_value=2,
-        max_value=30,
-        value=INTERVALO_ATUALIZACAO_PADRAO_S,
-        step=1,
-        format="%d s",
-    )
-    if st.sidebar.button("Atualizar agora", use_container_width=True):
-        st.rerun()
-    if not atualizar:
-        st.sidebar.caption("Atualizacao automatica pausada.")
-        return
-    if st_autorefresh is None:
-        st.sidebar.warning(
-            "Instale streamlit-autorefresh para atualizar sem recarregar a pagina."
-        )
-        return
-    contador = st_autorefresh(
-        interval=intervalo_s * 1000,
-        key="atualizacao_automatica",
-    )
-    st.sidebar.caption(f"Atualizacao automatica ativa.")
+# TESTE: validar_leituras com valores dentro e fora dos limites
+def test_validar_leituras():
+    dados = [
+        {"tag": "SNV-03", "valor": 50, "status": "OPERACIONAL"},   #válido
+        {"tag": "SNV-03", "valor": 150, "status": "OPERACIONAL"},  #inválido
+        {"tag": "STM-03", "valor": 300, "status": "OPERACIONAL"},  #válido
+        {"tag": "STM-03", "valor": 500, "status": "OPERACIONAL"},  #inválido
+        {"tag": "SRD-03", "valor": 25, "status": "OPERACIONAL"},   #válido
+        {"tag": "SRD-03", "valor": 60, "status": "OPERACIONAL"},   #inválido
+        {"tag": "SPR-03", "valor": 100, "status": "OPERACIONAL"},  #válido
+        {"tag": "SPR-03", "valor": 250, "status": "OPERACIONAL"},  #inválido
+    ]
+    df = pd.DataFrame(dados)
+    df_validado = app.validar_leituras(df)
+    assert len(df_validado) == 8
+    assert df_validado[df_validado["status_validado"] == "INVALIDA"].shape[0] == 4
 
-def registrar_comando(tag, acao):
-    comando = {
-        "tipo": "comando",
-        "tag": tag,
-        "acao": acao,
-        "origem": "supervisor",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
-    ARQUIVO_COMANDOS.parent.mkdir(parents=True, exist_ok=True)
-    # Anexa (append) para manter histórico
-    with open(ARQUIVO_COMANDOS, "a", encoding="utf-8") as arquivo:
-        arquivo.write(json.dumps(comando) + "\n")
-    st.session_state["ultimo_comando"] = comando
+# TESTE: ultimos_por_tag com dados ordenados
+def test_ultimos_por_tag():
+    dados = [
+        {"tag": "A", "timestamp": "2024-01-01 10:00", "valor": 1},
+        {"tag": "A", "timestamp": "2024-01-01 10:05", "valor": 2},
+        {"tag": "B", "timestamp": "2024-01-01 10:02", "valor": 10},
+        {"tag": "B", "timestamp": "2024-01-01 10:10", "valor": 20},
+        {"tag": "C", "timestamp": "2024-01-01 10:01", "valor": 100},
+    ]
+    df = pd.DataFrame(dados)
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    ultimos = app.ultimos_por_tag(df)
+    assert len(ultimos) == 3
+    assert ultimos[ultimos["tag"] == "A"].iloc[0]["valor"] == 2
+    assert ultimos[ultimos["tag"] == "B"].iloc[0]["valor"] == 20
+    assert ultimos[ultimos["tag"] == "C"].iloc[0]["valor"] == 100
 
-def preparar_dataframe(df):
-    if df.empty:
-        return df
-    if "tipo" not in df.columns:
-        df["tipo"] = ""
-    if "timestamp" in df.columns:
-        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-    if "valor" in df.columns:
-        df["valor"] = pd.to_numeric(df["valor"], errors="coerce")
-    return df
+# TESTE: db_writer - linha_valida
+def test_linha_valida():
+    assert db_writer.linha_valida('{"a":1}') == True
+    assert db_writer.linha_valida('{"a":1,}') == False
+    assert db_writer.linha_valida('') == False
+    assert db_writer.linha_valida('texto') == False
 
-def validar_leituras(df):
-    if df.empty or "valor" not in df.columns:
-        return df
-    df = df.copy()
-    def validar_linha(row):
-        tag = row.get("tag")
-        valor = row.get("valor")
-        if pd.isna(valor):
-            return "INVALIDA"
-        if tag not in LIMITES_SENSORES:
-            return row.get("status", "DESCONHECIDO")
-        limite = LIMITES_SENSORES[tag]
-        if valor < limite["min"] or valor > limite["max"]:
-            return "INVALIDA"
-        return row.get("status", "OPERACIONAL")
-    df["status_validado"] = df.apply(validar_linha, axis=1)
-    return df
+# TESTE: db_writer - ler_posicao e salvar_posicao
+def test_posicoes(tmp_path):
+    pos_file = tmp_path / "pos.txt"
+    assert db_writer.ler_posicao(pos_file) == 0
+    db_writer.salvar_posicao(pos_file, 10)
+    assert db_writer.ler_posicao(pos_file) == 10
 
-def ultimos_por_tag(df):
-    if df.empty or "tag" not in df.columns:
-        return pd.DataFrame()
-    if "timestamp" in df.columns:
-        return (
-            df.sort_values("timestamp")
-            .groupby("tag", as_index=False)
-            .tail(1)
-            .sort_values("tag")
-        )
-    return df.groupby("tag", as_index=False).tail(1).sort_values("tag")
+# TESTE: extração de dose_acumulada do DataFrame
+def test_extracao_dose_acumulada():
+    dados = [
+        {"tag": "SRD-03", "valor": 30, "dose_acumulada": 150.5},
+        {"tag": "SNV-03", "valor": 50},
+        {"tag": "SRD-03", "valor": 25, "dose_acumulada": 160.2},
+    ]
+    df = pd.DataFrame(dados)
 
-arquivo_leitura = BASE_DIR / "output" / "readings.jl"
-df = carregar_jsonl(arquivo_leitura)
-df = preparar_dataframe(df)
+    dose_acumulada = None
+    if not df.empty and "dose_acumulada" in df.columns:
+        rad_df = df[df["tag"] == "SRD-03"].dropna(subset=["dose_acumulada"])
+        if not rad_df.empty:
+            dose_acumulada = rad_df.iloc[-1]["dose_acumulada"]
 
-st.title("REATOR - Supervisor da Estacao")
-st.caption(f"Arquivo monitorado: {arquivo_leitura}")
-ativar_atualizacao_automatica()
+    assert dose_acumulada == 160.2
 
-if df.empty:
-    st.warning("Nenhuma leitura encontrada ainda. Execute o programa C++ para gerar o arquivo readings.jl.")
-    st.stop()
+# TESTE: registrar_comando escreve no arquivo commands.jl
+def test_registrar_comando(tmp_path):
+    import app
+    original_commands = app.ARQUIVO_COMANDOS
+    app.ARQUIVO_COMANDOS = tmp_path / "commands.jl"
 
-# Filtragem de leituras
-leituras = df[
-    (df["tipo"].fillna("") == "") &
-    (df["tag"].isin(LIMITES_SENSORES.keys()))
-].copy()
-leituras = validar_leituras(leituras)
+    try:
+        app.registrar_comando("BAG-03", "DESLIGAR")
+        with open(app.ARQUIVO_COMANDOS, "r") as f:
+            conteudo = f.read().strip()
+        assert "BAG-03" in conteudo
+        assert "DESLIGAR" in conteudo
+        assert "comando" in conteudo
+        dados = json.loads(conteudo)
+        assert dados["tag"] == "BAG-03"
+        assert dados["acao"] == "DESLIGAR"
+    finally:
+        app.ARQUIVO_COMANDOS = original_commands
 
-alarmes = df[df["tipo"].fillna("") == "alarme"].copy()
-falhas_json = df[df["tipo"].fillna("") == "falha"].copy()
-atuadores = df[df["tipo"].fillna("") == "atuador"].copy()
+# TESTE: db_writer - EventBus notifica subscribers
+def test_event_bus_notifica_subscribers():
+    eventos = []
 
-# Métricas
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.metric("Total de registros", len(df))
-with col2:
-    st.metric("Leituras", len(leituras))
-with col3:
-    st.metric("Alarmes", len(alarmes))
-with col4:
-    if not leituras.empty and "status_validado" in leituras.columns:
-        invalidas = leituras[leituras["status_validado"] == "INVALIDA"]
-    else:
-        invalidas = pd.DataFrame()
-    st.metric("Leituras invalidas", len(invalidas))
+    def callback(evento):
+        eventos.append(evento)
 
-st.subheader("Leituras atuais")
-leituras_atuais = ultimos_por_tag(leituras)
-if leituras_atuais.empty:
-    st.info("Nenhuma leitura de sensor encontrada.")
-else:
-    colunas_leituras = ["tag", "valor", "unidade", "timestamp"]
-    colunas_existentes = [col for col in colunas_leituras if col in leituras_atuais.columns]
-    st.dataframe(leituras_atuais[colunas_existentes], use_container_width=True, hide_index=True)
+    bus = db_writer.EventBus()
+    bus.subscribe(callback)
+    bus.publish({"tipo": "persistencia", "tabela": "leituras", "quantidade": 1})
 
-st.subheader("Historico de variaveis")
-if leituras.empty:
-    st.info("Sem historico de leituras para exibir.")
-else:
-    tags_disponiveis = sorted(leituras["tag"].dropna().unique())
-    tags_padrao = [tag for tag in ["SNV-03", "STM-03"] if tag in tags_disponiveis]
-    if len(tags_padrao) < 2:
-        tags_padrao = tags_disponiveis[:2]
-    tags_escolhidas = st.multiselect("Variaveis no grafico", options=tags_disponiveis, default=tags_padrao)
-    historico_filtrado = leituras[leituras["tag"].isin(tags_escolhidas)].copy()
-    if historico_filtrado.empty:
-        st.info("Selecione pelo menos uma variavel para visualizar o grafico.")
-    else:
-        grafico = historico_filtrado.pivot_table(index="timestamp", columns="tag", values="valor", aggfunc="last")
-        st.line_chart(grafico)
-
-st.subheader("Estado dos atuadores")
-if atuadores.empty:
-    st.info("O arquivo JSON atual ainda nao possui registros de atuadores.")
-else:
-    atuadores_atuais = ultimos_por_tag(atuadores)
-    colunas_atuadores = ["tag", "timestamp", "valor", "_linha"]
-    colunas_existentes = [col for col in colunas_atuadores if col in atuadores_atuais.columns]
-    st.dataframe(atuadores_atuais[colunas_existentes], use_container_width=True, hide_index=True)
-
-st.subheader("Alarmes")
-if alarmes.empty:
-    st.success("Nenhum alarme registrado.")
-else:
-    alarmes_ordenados = alarmes.sort_values("timestamp", ascending=False, na_position="last")
-    colunas_alarmes = ["tag", "status", "timestamp"]
-    colunas_existentes = [col for col in colunas_alarmes if col in alarmes_ordenados.columns]
-    st.dataframe(alarmes_ordenados[colunas_existentes], use_container_width=True, hide_index=True)
-
-st.subheader("Historico consultavel")
-if leituras.empty:
-    st.info("Nenhuma leitura disponivel para consulta.")
-else:
-    tags_para_filtro = sorted(leituras["tag"].dropna().unique())
-    tags_filtradas = st.multiselect("Filtrar por sensor", options=tags_para_filtro, default=tags_para_filtro)
-    historico_consulta = leituras[leituras["tag"].isin(tags_filtradas)].copy()
-    historico_consulta = historico_consulta.sort_values("timestamp", ascending=False, na_position="last")
-    colunas_consulta = ["tag", "valor", "unidade", "timestamp", "status"]
-    colunas_existentes_consulta = [col for col in colunas_consulta if col in historico_consulta.columns]
-    st.dataframe(historico_consulta[colunas_existentes_consulta], use_container_width=True, hide_index=True)
-
-st.subheader("Comandos das varetas")
-col_cmd1, col_cmd2, col_cmd3 = st.columns(3)
-with col_cmd1:
-    if st.button("Automatico", use_container_width=True):
-        registrar_comando("VAR-03", "AUTOMATICO")
-        st.success("Comando enviado: controle automatico das varetas")
-with col_cmd2:
-    if st.button("Inserir manualmente", use_container_width=True):
-        registrar_comando("VAR-03", "INSERIR")
-        st.success("Comando enviado: inserir varetas manualmente")
-with col_cmd3:
-    if st.button("Retirar manualmente", use_container_width=True):
-        registrar_comando("VAR-03", "RETIRAR")
-        st.success("Comando enviado: retirar varetas manualmente")
-
-st.subheader("Comandos da bomba")
-col_bomba1, col_bomba2, col_bomba3 = st.columns(3)
-with col_bomba1:
-    if st.button("Automático", use_container_width=True):
-        registrar_comando("BAG-03", "AUTOMATICO")
-        st.success("Comando enviado: controle automatico da bomba")
-with col_bomba2:
-    if st.button("Ligar bomba", use_container_width=True):
-        registrar_comando("BAG-03", "LIGAR")
-        st.success("Comando enviado: ligar bomba manualmente")
-with col_bomba3:
-    if st.button("Desligar bomba", use_container_width=True):
-        registrar_comando("BAG-03", "DESLIGAR")
-        st.success("Comando enviado: desligar bomba manualmente")
-
-ultimo_comando = st.session_state.get("ultimo_comando")
-if ultimo_comando:
-    st.info(f"Ultimo comando gerado: {ultimo_comando['acao']} em {ultimo_comando['tag']} as {ultimo_comando['timestamp']}")
-
-st.subheader("Historico de comandos")
-comandos = carregar_jsonl(ARQUIVO_COMANDOS)
-comandos = preparar_dataframe(comandos)
-if comandos.empty:
-    st.info("Nenhum comando registrado ainda.")
-else:
-    comandos = comandos.sort_values("timestamp", ascending=False, na_position="last")
-    st.dataframe(comandos, use_container_width=True, hide_index=True)
-
-st.subheader("Falhas e leituras invalidas")
-problemas = []
-if not falhas_json.empty:
-    problemas.append(falhas_json)
-if 'invalidas' in locals() and not invalidas.empty:
-    problemas.append(invalidas)
-if problemas:
-    df_problemas = pd.concat(problemas, ignore_index=True)
-    st.error("Foram encontradas falhas ou leituras invalidas.")
-    st.dataframe(df_problemas, use_container_width=True, hide_index=True)
-else:
-    st.success("Nenhuma falha ou leitura invalida detectada.")
+    assert eventos == [{"tipo": "persistencia", "tabela": "leituras", "quantidade": 1}]
