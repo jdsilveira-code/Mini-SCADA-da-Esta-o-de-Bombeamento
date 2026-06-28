@@ -1,4 +1,5 @@
 #include "Atuadores.hpp"
+#include "EstadoReator.hpp"
 
 Atuador::Atuador(std::string tag) : Tag(tag) {}
 
@@ -12,7 +13,7 @@ BombaAgua::BombaAgua(std::string tag) : Atuador(tag) {}
 
 void BombaAgua::ligar() {
     ligado = true;
-    Potencia = Potencia > 0.0f ? Potencia : 50.0f; // Liga com potencia setada ou se for 0, liga com 50%.
+    Potencia = Potencia > 0.0f ? Potencia : 50.0f;
 }
 
 void BombaAgua::desligar() {
@@ -37,22 +38,17 @@ Varetas::Varetas(std::string tag) : Atuador(tag) {}
 
 void Varetas::ligar() { ligado = true; }
 
-void Varetas::desligar() {
-    ligado = false;
-}
+void Varetas::desligar() { ligado = false; }
 
-bool Varetas::isLigado() const {
-    return Atuador::isLigado();
-}
+bool Varetas::isLigado() const { return Atuador::isLigado(); }
 
 void Varetas::AjustarQueima(float NovoValor) {
-    if(NovoValor < 0.0f || NovoValor > 100.0f)
+    if (Reator::getInstance().isExplodido()) {
+        return;
+    }
+    if (NovoValor < 0.0f || NovoValor > 100.0f)
         throw std::out_of_range("Queima inválida");
-    
-    ValorAtual = NovoValor; 
-    // Mapear semântica desejada:
-    // - ValorAtual == 0.0f  => varetas RETIRADAS (ligado == true)
-    // - ValorAtual >  0.0f  => varetas INSERIDAS  (ligado == false)
+    ValorAtual = NovoValor;
     if (ValorAtual == 0.0f) {
         ligar();
     } else {
@@ -60,6 +56,6 @@ void Varetas::AjustarQueima(float NovoValor) {
     }
 }
 
-float Varetas::getValorAtual() { 
-    return ValorAtual; 
+float Varetas::getValorAtual() {
+    return ValorAtual;
 }

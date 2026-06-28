@@ -1,5 +1,6 @@
 #include "Sensores.hpp"
 #include "AtuadorInterfaces.hpp"
+#include "EstadoReator.hpp"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -81,6 +82,13 @@ SensorRadiacao::SensorRadiacao(std::string tag, int max, int min, IVaretasState*
 
 void SensorRadiacao::ler() {
     NivelRadiacaoAtual = gerador.decimal(ValorMin, ValorMax);
+    
+
+    if (Reator::getInstance().isExplodido()) {
+        NivelRadiacaoAtual = gerador.decimal(10000, 90000);
+       
+    }
+
     atualizarTimestamp();
     AcumularDose(NivelRadiacaoAtual, Timestamp);
 }
@@ -122,8 +130,15 @@ SensorTemp::SensorTemp(std::string tag, int max, int min) {
 
 void SensorTemp::ler() {
     TempKelvin = gerador.decimal(ValorMin, ValorMax);
+    
+
+    if (Reator::getInstance().isExplodido()) {
+        TempKelvin = gerador.decimal(10000, 90000);   
+    }
+
     atualizarTimestamp();
 }
+
 
 int SensorTemp::getValorAtual() const {
     return TempKelvin;

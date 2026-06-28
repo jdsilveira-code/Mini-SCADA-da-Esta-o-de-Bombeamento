@@ -13,6 +13,7 @@
 #include "../include/Sensores.hpp"
 #include "../include/Alarmes.hpp"
 #include "../include/JsonExporter.hpp"
+#include "../include/EstadoReator.hpp"
 
 // Constantes de configuração dos limites de controle do EstrategiaControle.
 constexpr float NIVEL_MIN_PCT = 20.0f;
@@ -32,19 +33,18 @@ constexpr int LimiteMinPressao = 0;
 constexpr int LimiteMaxPressao = 200;
 
 // Tags dos sensores
-const std::string TagNivel = "SNV-01";
-const std::string TagTemp = "STM-01";
-const std::string TagRadiacao = "SRD-01";
-const std::string TagPressao = "SPR-01";
+const std::string TagNivel = "SNV-03";
+const std::string TagTemp = "STM-03";
+const std::string TagRadiacao = "SRD-03";
+const std::string TagPressao = "SPR-03";
 
 // Tags dos atuadores
-const std::string TagBomba = "BAG-01";
-const std::string TagVaretas = "VAR-01";
+const std::string TagBomba = "BAG-03";
+const std::string TagVaretas = "VAR-03";
 
 // Constantes de configuração dos limites de operação dos alarmes.
 constexpr int LimiteMinAlarmeNivel = 30;
 constexpr int LimiteMaxAlarmeNivel = 99;
-
 constexpr int LimiteMinAlarmeTemp = 300;
 constexpr int LimiteMaxAlarmeTemp = 350;
 constexpr int LimiteMinAlarmeRadiacao = 10;
@@ -58,11 +58,10 @@ static void printSeparador() {
 
 // Retorna o caminho absoluto para output/ na raiz do projeto
 static std::filesystem::path getOutputDir() {
-    // __FILE__: dispositivo_cpp/src/main.cpp → sobe 3 níveis → raiz do projeto
     std::filesystem::path srcFile = std::filesystem::absolute(__FILE__);
-    return srcFile.parent_path()   // src/
-                  .parent_path()   // dispositivo_cpp/
-                  .parent_path()   // raiz do projeto
+    return srcFile.parent_path()
+                  .parent_path()
+                  .parent_path()
            / "output";
 }
 
@@ -76,69 +75,46 @@ static bool criarDiretorioOutput(const std::filesystem::path& dir) {
     return true;
 }
 
-// Considere que 30 segundos são 30 minutos
 static void pausarEntreCiclos() {
 #if defined(_WIN32)
-    Sleep(5000);
+    Sleep(1000);
 #else
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 #endif
 }
 
-static std::string lerUltimoComandoVaretas() {
+// Lê a ÚLTIMA LINHA do arquivo commands.jl e extrai a ação para a tag solicitada
+static std::string lerUltimoComando(const std::string& tag) {
     std::ifstream arquivo("output/commands.jl");
     std::string linha;
-    std::string ultimaAcao;
+    std::string ultimaLinha;
 
     if (!arquivo) {
-        return ultimaAcao;
+        return "";
     }
 
     while (std::getline(arquivo, linha)) {
-        if (linha.find("VAR-01") == std::string::npos) {
-            continue;
-        }
-
-        if (linha.find("AUTOMATICO") != std::string::npos) {
-            ultimaAcao = "AUTOMATICO";
-        } else if (linha.find("INSERIR") != std::string::npos) {
-            ultimaAcao = "INSERIR";
-        } else if (linha.find("RETIRAR") != std::string::npos) {
-            ultimaAcao = "RETIRAR";
+        if (!linha.empty()) {
+            ultimaLinha = linha;
         }
     }
+    arquivo.close();
 
-    return ultimaAcao;
-}
-
-static std::string lerUltimoComandoBomba() {
-    std::ifstream arquivo("output/commands.jl");
-    std::string linha;
-    std::string ultimaAcao;
-
-    if (!arquivo) {
-        return ultimaAcao;
+    if (ultimaLinha.find(tag) == std::string::npos) {
+        return "";
     }
 
-    while (std::getline(arquivo, linha)) {
-        if (linha.find("BAG-01") == std::string::npos) {
-            continue;
-        }
+    if (ultimaLinha.find("AUTOMATICO") != std::string::npos) return "AUTOMATICO";
+    if (ultimaLinha.find("DESLIGAR") != std::string::npos) return "DESLIGAR";
+    if (ultimaLinha.find("LIGAR") != std::string::npos) return "LIGAR";
+    if (ultimaLinha.find("INSERIR") != std::string::npos) return "INSERIR";
+    if (ultimaLinha.find("RETIRAR") != std::string::npos) return "RETIRAR";
 
-        if (linha.find("AUTOMATICO") != std::string::npos) {
-            ultimaAcao = "AUTOMATICO";
-        } else if (linha.find("LIGAR") != std::string::npos) {
-            ultimaAcao = "LIGAR";
-        } else if (linha.find("DESLIGAR") != std::string::npos) {
-            ultimaAcao = "DESLIGAR";
-        }
-    }
-
-    return ultimaAcao;
+    return "";
 }
 
 static void aplicarComandoSupervisor(Varetas& varetas, EstrategiaManual& estrManual, EstrategiaAutomatica& estrAuto, SensorRadiacao& sRad) {
-    const std::string acao = lerUltimoComandoVaretas();
+    const std::string acao = lerUltimoComando("VAR-03");
 
     if (acao == "INSERIR") {
         estrManual.setAcaoVaretas(AcaoVaretas::INSERIR);
@@ -158,7 +134,7 @@ static void aplicarComandoSupervisorBomba(
     ControleBombaManual& controleManual,
     ControleBombaAutomatico& controleAutomatico
 ) {
-    const std::string acao = lerUltimoComandoBomba();
+    const std::string acao = lerUltimoComando("BAG-03");
 
     if (acao == "LIGAR") {
         controleManual.setAcao(AcaoBomba::LIGAR);
@@ -179,13 +155,16 @@ int main() {
     criarDiretorioOutput(outputDir);
 
     // Atuadores
-    BombaAgua bomba  (TagBomba);
-    Varetas   varetas(TagVaretas);
+    BombaAgua bomba(TagBomba);
+    Varetas varetas(TagVaretas);
+
+    // Garante que a bomba inicia desligada
+    bomba.desligar();
 
     // Sensores
     SensorNivel    sNivel    (TagNivel, LimiteMaxNivel, LimiteMinNivel);
     SensorTemp     sTemp     (TagTemp, LimiteMaxTemp, LimiteMinTemp);
-    SensorRadiacao sRad (TagRadiacao, LimiteMaxRadiacao, LimiteMinRadiacao, &varetas);
+    SensorRadiacao sRad      (TagRadiacao, LimiteMaxRadiacao, LimiteMinRadiacao, &varetas);
     SensorPressao  sPressao  (TagPressao, LimiteMaxPressao, LimiteMinPressao);
 
     // Estratégias
@@ -206,7 +185,6 @@ int main() {
     EstrategiaManual estrManual;
     EstrategiaAutomatica estrAuto(CtrlBombaAutomatico, CtrlQueima);
 
-
     // Alarmes
     AlarmeNivel AlarmeNivel(LimiteMinAlarmeNivel, LimiteMaxAlarmeNivel, sNivel.getTag());
     AlarmeTemperatura AlarmeTemp(LimiteMinAlarmeTemp, LimiteMaxAlarmeTemp, sTemp.getTag());
@@ -215,10 +193,9 @@ int main() {
 
     int ciclo = 0;
 
-    // Loop principal de simulação, representando os ciclos de operação do sistema.
+    // Loop principal
     while (true) {
         std::cout << "\n=== CICLO " << ciclo << " ===\n";
-
         printSeparador();
 
         // Leitura dos sensores
@@ -227,16 +204,27 @@ int main() {
         sRad.ler();
         sPressao.ler();
 
+        // Atualiza estado do reator baseado na dose acumulada
+        float dose = sRad.getDoseAcumulada();
+        if (dose >= 300.0f) {
+            Reator::getInstance().setEstado(EstadoReator::EXPLODIDO);
+        } else if (dose >= 250.0f) {
+            Reator::getInstance().setEstado(EstadoReator::ALERTA);
+        } else {
+            Reator::getInstance().setEstado(EstadoReator::NORMAL);
+        }
+
+        // Verifica alarmes
         AlarmeNivel.verificar(&sNivel);
         AlarmeTemp.verificar(&sTemp);
         AlarmeRad.verificar(&sRad);
         AlarmePressaoInstancia.verificar(&sPressao);
-        
-        // Aplicar estratégias
+
+        // Aplica comandos
         aplicarComandoSupervisorBomba(bomba, CtrlBombaManual, CtrlBombaAutomatico);
         CtrlQueima.aplicar(&sRad, &varetas);
         aplicarComandoSupervisor(varetas, estrManual, estrAuto, sRad);
-        
+
         // Print das leituras
         std::cout << "[" << sNivel.getTimestamp()    << "] "
                   << sNivel.getTag()    << " = " << sNivel.getValorAtual()    << " " << sNivel.getUnidadeMedida()    << "\n";
@@ -249,12 +237,10 @@ int main() {
                   << sPressao.getTag()  << " = " << sPressao.getValorAtual()  << " " << sPressao.getUnidadeMedida()  << "\n";
 
         printSeparador();
-        // Print do estado dos atuadores
         std::cout << "Bomba  [" << bomba.getTag()   << "]: " << (bomba.isLigado()   ? "LIGADA"   : "DESLIGADA") << "\n";
         std::cout << "Varetas[" << varetas.getTag() << "]: " << (varetas.isLigado() ? "RETIRADAS" : "INSERIDAS") << "\n";
-        
+
         printSeparador();
-        // Print do estado dos alarmes
         std::cout << "Alarme [" << AlarmeNivel.getTag()         << "]: " << AlarmeNivel.getStatusAlarme()         << "\n";
         std::cout << "Alarme [" << AlarmeTemp.getTag()   << "]: " << AlarmeTemp.getStatusAlarme()   << "\n";
         std::cout << "Alarme [" << AlarmeRad.getTag()      << "]: " << AlarmeRad.getStatusAlarme()      << "\n";
@@ -273,6 +259,10 @@ int main() {
             ofs << JsonExporter::gerarJsonAlarme(AlarmePressaoInstancia) << '\n';
             ofs << JsonExporter::gerarJsonAtuadorBomba(bomba, sNivel.getTimestamp()) << '\n';
             ofs << JsonExporter::gerarJsonAtuadorVaretas(varetas, sNivel.getTimestamp()) << '\n';
+            if (Reator::getInstance().isExplodido()) {
+                float doseFalha = sRad.getDoseAcumulada();
+                ofs << JsonExporter::gerarJsonFalha("REATOR EM FUSÃO - EXPLOSÃO NUCLEAR", doseFalha, sRad.getTimestamp()) << '\n';
+            }
             ofs.close();
         } else {
             std::cerr << "Erro ao abrir arquivo " << (outputDir / "readings.jl").string() << " para escrita\n";
