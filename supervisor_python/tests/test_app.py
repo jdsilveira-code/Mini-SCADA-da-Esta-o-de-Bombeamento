@@ -49,14 +49,14 @@ def test_carregar_jsonl_invalido():
 # TESTE: validar_leituras com valores dentro e fora dos limites
 def test_validar_leituras():
     dados = [
-        {"tag": "SNV-01", "valor": 50, "status": "OPERACIONAL"},
-        {"tag": "SNV-01", "valor": 150, "status": "OPERACIONAL"},
-        {"tag": "STM-01", "valor": 300, "status": "OPERACIONAL"},
-        {"tag": "STM-01", "valor": 500, "status": "OPERACIONAL"},
-        {"tag": "SRD-01", "valor": 25, "status": "OPERACIONAL"},
-        {"tag": "SRD-01", "valor": 60, "status": "OPERACIONAL"},
-        {"tag": "SVZ-01", "valor": 100, "status": "OPERACIONAL"},
-        {"tag": "SVZ-01", "valor": 250, "status": "OPERACIONAL"},
+        {"tag": "SNV-03", "valor": 50, "status": "OPERACIONAL"},
+        {"tag": "SNV-03", "valor": 150, "status": "OPERACIONAL"},
+        {"tag": "STM-03", "valor": 300, "status": "OPERACIONAL"},
+        {"tag": "STM-03", "valor": 500, "status": "OPERACIONAL"},
+        {"tag": "SRD-03", "valor": 25, "status": "OPERACIONAL"},
+        {"tag": "SRD-03", "valor": 60, "status": "OPERACIONAL"},
+        {"tag": "SPR-03", "valor": 100, "status": "OPERACIONAL"},
+        {"tag": "SVPR-03", "valor": 250, "status": "OPERACIONAL"},
     ]
     df = pd.DataFrame(dados)
     df_validado = app.validar_leituras(df)
