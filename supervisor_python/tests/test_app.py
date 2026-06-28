@@ -56,12 +56,12 @@ def test_validar_leituras():
         {"tag": "SRD-03", "valor": 25, "status": "OPERACIONAL"},
         {"tag": "SRD-03", "valor": 60, "status": "OPERACIONAL"},
         {"tag": "SPR-03", "valor": 100, "status": "OPERACIONAL"},
-        {"tag": "SVPR-03", "valor": 250, "status": "OPERACIONAL"},
+        {"tag": "SPR-03", "valor": 250, "status": "OPERACIONAL"},
     ]
     df = pd.DataFrame(dados)
     df_validado = app.validar_leituras(df)
     assert len(df_validado) == 8
-    assert df_validado[df_validado["status_validado"] == "INVALIDA"].shape[0] == 4
+    assert df_validado[df_validado["status_validado"] == "INVALIDA"].shape[0] == 3
 
 # TESTE: ultimos_por_tag com dados ordenados
 def test_ultimos_por_tag():

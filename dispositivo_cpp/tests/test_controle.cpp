@@ -6,6 +6,7 @@
 #include "EstrategiaControle.hpp"
 #include "Sensores.hpp"
 #include "Atuadores.hpp"
+#include "EstadoReator.hpp"
 
 // MOCK para SensorNivel
 class SensorNivelMock : public SensorNivel {
@@ -104,6 +105,23 @@ int main() {
         estrategia.aplicar(&sensorRad, &varetas);
         assert(std::abs(varetas.getValorAtual() - 0.0f) < 0.1f);
     }
+
+    {
+    SensorRadiacaoMock sensorRad("SRD-03", 50, 0, nullptr, 30, 200.0f);
+    Varetas varetas("VAR-03");
+    ControleQueima estrategia(50.0f, 150.0f);
+
+    // Força explosão
+    Reator::getInstance().setEstado(EstadoReator::EXPLODIDO);
+
+    // Ajusta varetas para 0 e aplica controle – não deve alterar
+    varetas.AjustarQueima(0.0f);
+    estrategia.aplicar(&sensorRad, &varetas);
+    assert(std::abs(varetas.getValorAtual() - 0.0f) < 0.1f); // deve permanecer 0
+
+    // Reseta para normal
+    Reator::getInstance().setEstado(EstadoReator::NORMAL);
+}
 
     // TESTE: ControleQueima - construtor completo com SensorTemp
     {
