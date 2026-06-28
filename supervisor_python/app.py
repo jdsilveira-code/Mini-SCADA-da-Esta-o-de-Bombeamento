@@ -158,7 +158,70 @@ if __name__ == "__main__":
     falhas_json = df[df["tipo"].fillna("") == "falha"].copy()
     atuadores = df[df["tipo"].fillna("") == "atuador"].copy()
 
-    # Métricas
+    # ---- ALERTA DE EXPLOSÃO (SOMENTE SE HOUVER FALHA CRÍTICA) ----
+    if not falhas_json.empty:
+        explosao = falhas_json[
+            (falhas_json["severidade"] == "CRITICA") &
+            (falhas_json["mensagem"].str.contains("REATOR EM FUSÃO", case=False, na=False))
+        ]
+        if not explosao.empty:
+            mensagem_erro = "FALHA CRÍTICA O REATOR EXPLODIU"
+
+            # CSS para o banner fixo no topo
+            st.markdown(
+                """
+                <style>
+                .banner-emergencia-scada {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    background: linear-gradient(90deg, #7a0000, #ff0000, #7a0000);
+                    background-size: 200% 200%;
+                    color: white;
+                    text-align: center;
+                    padding: 18px;
+                    font-size: 22px;
+                    font-weight: bold;
+                    font-family: 'Courier New', Courier, monospace;
+                    z-index: 999999;
+                    box-shadow: 0px 6px 20px rgba(0,0,0,0.7);
+                    animation: pulsarBanner 1.2s ease infinite;
+                }
+
+                @keyframes pulsarBanner {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+
+                /* Empurra o app para baixo para o banner não cobrir o título */
+                .stApp {
+                    margin-top: 55px;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+
+            # Renderiza o banner
+            st.markdown(
+                f'<div class="banner-emergencia-scada">⚠️ {mensagem_erro.upper()} ⚠️</div>',
+                unsafe_allow_html=True
+            )
+
+            # Sirene contínua (loop)
+            sirene_url = "https://actions.google.com/sounds/v1/alarms/industrial_alarm_loop.ogg"
+            st.markdown(
+                f"""
+                <audio autoplay loop style="display:none;">
+                    <source src="{sirene_url}" type="audio/ogg">
+                </audio>
+                """,
+                unsafe_allow_html=True
+            )
+
+    # ---- MÉTRICAS ----
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Total de registros", len(df))
@@ -274,12 +337,38 @@ if __name__ == "__main__":
     st.subheader("Falhas e leituras invalidas")
     problemas = []
     if not falhas_json.empty:
-        problemas.append(falhas_json)
+        falhas_clean = falhas_json[["timestamp", "mensagem", "dose_acumulada", "severidade"]].copy()
+        falhas_clean["tipo"] = "Falha"
+        problemas.append(falhas_clean)
     if 'invalidas' in locals() and not invalidas.empty:
-        problemas.append(invalidas)
+        invalidas_clean = invalidas[["timestamp", "tag", "valor", "unidade", "status_validado"]].copy()
+        invalidas_clean["tipo"] = "Inválida"
+        problemas.append(invalidas_clean)
+
     if problemas:
         df_problemas = pd.concat(problemas, ignore_index=True)
-        st.error("Foram encontradas falhas ou leituras invalidas.")
-        st.dataframe(df_problemas, use_container_width=True, hide_index=True)
+        df_problemas = df_problemas.sort_values("timestamp", ascending=False, na_position="last")
+        df_problemas.rename(columns={
+            "status_validado": "status",
+            "dose_acumulada": "dose (mSv)",
+            "severidade": "gravidade"
+        }, inplace=True)
+
+        st.dataframe(
+            df_problemas,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "timestamp": "Timestamp",
+                "tag": "Tag",
+                "valor": "Valor",
+                "unidade": "Unidade",
+                "mensagem": "Mensagem",
+                "dose (mSv)": "Dose (mSv)",
+                "gravidade": "Gravidade",
+                "status": "Status",
+                "tipo": "Tipo"
+            }
+        )
     else:
         st.success("Nenhuma falha ou leitura invalida detectada.")
