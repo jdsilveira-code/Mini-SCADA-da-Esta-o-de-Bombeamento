@@ -77,9 +77,9 @@ static bool criarDiretorioOutput(const std::filesystem::path& dir) {
 
 static void pausarEntreCiclos() {
 #if defined(_WIN32)
-    Sleep(1000);
+    Sleep(30000);
 #else
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(30));
 #endif
 }
 
