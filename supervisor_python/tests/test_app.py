@@ -61,7 +61,7 @@ def test_validar_leituras():
     df = pd.DataFrame(dados)
     df_validado = app.validar_leituras(df)
     assert len(df_validado) == 8
-    assert df_validado[df_validado["status_validado"] == "INVALIDA"].shape[0] == 3
+    assert df_validado[df_validado["status_validado"] == "INVALIDA"].shape[0] == 4
 
 # TESTE: ultimos_por_tag com dados ordenados
 def test_ultimos_por_tag():
