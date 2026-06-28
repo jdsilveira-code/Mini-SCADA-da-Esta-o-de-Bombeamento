@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 db_writer.py - Lê novas linhas dos arquivos readings.jl e commands.jl
-e as insere em CSV e SQLite.
+e as insere no SQLite.
 Rode em background: python db_writer.py
 """
 
@@ -10,9 +10,7 @@ import sqlite3
 import time
 from pathlib import Path
 from datetime import datetime
-import csv
-import os
-from typing import Callable, Any, List, Optional
+from typing import Callable, List
 
 # ---- CONFIGURAÇÕES ----
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,10 +22,6 @@ COMMANDS_JL = BASE_DIR / "output" / "commands.jl"
 # Diretório de destino
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
-
-# Arquivos CSV
-READINGS_CSV = DATA_DIR / "readings.csv"
-COMMANDS_CSV = DATA_DIR / "commands.csv"
 
 # SQLite
 DB_PATH = DATA_DIR / "scada.db"
@@ -52,25 +46,6 @@ class EventBus:
     def publish(self, evento: dict) -> None:
         for callback in self._subscribers:
             callback(evento)
-
-
-class PersistenceStrategy:
-    """Estratégia para persistir dados de forma intercambiável."""
-
-    def persistir(self, dados: List[dict], caminho: Path, colunas: Optional[List[str]] = None) -> None:
-        raise NotImplementedError
-
-
-class CsvPersistenceStrategy(PersistenceStrategy):
-    def persistir(self, dados: List[dict], caminho: Path, colunas: Optional[List[str]] = None) -> None:
-        colunas = colunas or []
-        with open(caminho, "a", newline="", encoding="utf-8") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=colunas)
-            if not caminho.exists() or caminho.stat().st_size == 0:
-                writer.writeheader()
-            for item in dados:
-                row = {col: item.get(col, "") for col in colunas}
-                writer.writerow(row)
 
 
 # ---- FUNÇÕES AUXILIARES ----
@@ -99,7 +74,7 @@ def linha_valida(linha):
 
 def processar_arquivo_jl(caminho_jl, arquivo_pos, tabela, colunas):
     """
-    Lê novas linhas do arquivo .jl, insere no CSV e no SQLite.
+    Lê novas linhas do arquivo .jl e insere no SQLite.
     Retorna o número de linhas inseridas.
     """
     if not caminho_jl.exists():
@@ -123,12 +98,7 @@ def processar_arquivo_jl(caminho_jl, arquivo_pos, tabela, colunas):
     # Converte para lista de dicionários
     dados = [json.loads(linha) for linha in linhas_novas]
 
-    # ---- 1. Salvar no CSV (append) via Strategy ----
-    caminho_csv = READINGS_CSV if tabela == "leituras" else COMMANDS_CSV
-    persistence_strategy = CsvPersistenceStrategy()
-    persistence_strategy.persistir(dados, caminho_csv, colunas)
-
-    # ---- 2. Salvar no SQLite ----
+    # ---- Salvar no SQLite ----
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -145,7 +115,7 @@ def processar_arquivo_jl(caminho_jl, arquivo_pos, tabela, colunas):
     conn.commit()
     conn.close()
 
-    # Notifica observadores sobre o lote processado
+    # Notifica observadores sobre o lote processado (Observer funcionando de forma independente!)
     event_bus = EventBus()
     event_bus.publish({
         "tipo": "persistencia",
@@ -153,7 +123,7 @@ def processar_arquivo_jl(caminho_jl, arquivo_pos, tabela, colunas):
         "quantidade": len(linhas_novas),
     })
 
-    # Atualiza a posição
+    # Atualiza a posição de controle
     nova_pos = pos_inicial + len(linhas_novas)
     salvar_posicao(arquivo_pos, nova_pos)
 
@@ -170,7 +140,7 @@ COLUNAS_COMANDOS = [
 # ---- LOOP PRINCIPAL ----
 if __name__ == "__main__":
     print(f"Monitorando arquivos em {BASE_DIR}")
-    print(f"CSV e SQLite em {DATA_DIR}")
+    print(f"SQLite em {DATA_DIR}")
     print(f"Intervalo: {INTERVALO}s\n")
 
     while True:
