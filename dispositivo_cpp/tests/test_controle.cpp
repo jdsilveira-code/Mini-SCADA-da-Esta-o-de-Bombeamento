@@ -160,7 +160,6 @@ int main() {
 
     std::cout << "Todos os testes C++ passaram." << std::endl;
     return 0;
-}
 
     // TESTE: ControlePressao
     {
@@ -197,3 +196,6 @@ int main() {
         assert(bomba.getPotencia() < 100.0f); // reduziu
         assert(bomba.getPotencia() >= 0.0f);
     }
+}
+
+    
